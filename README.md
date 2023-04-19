@@ -1,6 +1,6 @@
 # scholar
 
-> Scholar Project UZB
+> Scholar Project
 
 ## Build Setup
 
