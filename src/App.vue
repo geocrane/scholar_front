@@ -12,4 +12,162 @@ export default {
 </script>
 
 <style>
+body {
+  min-height: 100vh;
+  padding: 0;
+}
+
+p {
+  font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+  font-size: 18px;
+}
+
+table{
+    width: 100%;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.disabled {
+  pointer-events: none;
+}
+
+.center {
+  text-align: center;
+}
+
+.justify {
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  -ms-hyphens: auto;
+  text-align: justify;
+}
+
+.info {
+  font-size: 25px;
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.background {
+  background-image: url("~@/assets/styles/scholar_background_orth.jpg");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-attachment: fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
+
+.info-field {
+  height: 55px;
+  margin-bottom: 10px;
+}
+
+.no-margin-bott {
+  padding-bottom: 0;
+}
+
+.right-align {
+  text-align: right;
+}
+
+.wrapper {
+  width: 100%;
+  max-width: 500px;
+  height: 90vh;
+  max-height: 800px;
+  position: relative;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.question {
+  height: 125px;
+  background-color: rgba(255, 255, 255, 0.5);
+  background-size: 100%;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  padding: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+  box-shadow: 1px 1px 5px 1px rgb(122, 122, 122, 0.5);
+  border-radius: 5px;
+}
+
+.center-field {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 8px;
+  margin-bottom: 10px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0px;
+  height: 110px;
+}
+
+.button {
+  background: white;
+  height: 40px;
+  width: 250px;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 1px 1px 5px 1px rgb(122, 122, 122, 0.5);
+  border-radius: 7px;
+  padding-top: 2px;
+  padding-bottom: 0px;
+  color: #000000;
+  font-size: 20px;
+  font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.instruction {
+  padding-top: 30px;
+  margin-bottom: 0px;
+}
+
+.text-instruction {
+  font-size: 18px;
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 0px;
+}
+
+.right {
+  color: white;
+  background-color: #44d368;
+}
+
+.false {
+  color: white;
+  background-color: rgb(253, 109, 109);
+}
+
+.next-button {
+  /* Позиционируем внизу main */
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 60px;
+  background: #52809e;
+  margin-left: auto;
+  margin-right: auto;
+  color: #ffffff;
+  font-size: 20px;
+  font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+  text-align: center;
+  padding-top: 5px;
+  margin-bottom: 0;
+}
+
+.inactive {
+  color: rgb(204, 204, 204);
+  background: #badce9;
+}
 </style>

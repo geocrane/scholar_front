@@ -2,11 +2,9 @@
     <body class="background">
     <div class="wrapper">
         <p class="text-tittle"><img src='~@/assets/styles/gramotey.png' style="margin-top: 20px;" width="100"></p>
-        <p style="font-size: 20px; font-weight: bold; color: #355DA4; text-align: center;">Викторина {{ this.quiz_header}}</p>
         <div class="meaning-registration">
             <div class="score">
-              <p class="score-text" style="font-weight: bold; color: #355DA4;">Вы ответили верно на {{ this.score }} <span v-if="this.score < 5 & this.score > 1">вопроса</span><span v-else-if="this.score == 1">вопрос</span><span v-else="this.score >= 5 & this.score == 0">вопросов</span> из {{ this.questions_count }} </p>
-              <p style="color: #355DA4;">Спасибо за участие!</p>
+              <p class="score-text" style="font-weight: bold; color: #355DA4;">В настоящее время викторины не проводятся!</p>
             </div>
         </div>
         <div class="variants">
@@ -33,31 +31,8 @@ export default {
     loader: false
   }
 },
-  mounted() {
-    axios.get(API_URL + "get_actual_quiz/").then(header => {
-      if (header.data["quiz_type"] == "orthography"){
-        this.quiz_header = '"Орфография"'
-      }
-      else if (header.data["quiz_type"] == "lexicon"){
-        this.quiz_header = '"Лексикон"'
-      }
-      else if (header.data["quiz_type"] == "phraseology"){
-        this.quiz_header = '"Фразеология"'
-      }
-    });
-    this.loader = true
-    axios.get(API_URL + "sessions/" + this.$route.params.session_id + "/")
-    .then(response=> {
-                  console.log(response.data);
-                  this.score = response.data['score']
-      })
-      .catch(error => {
-                      console.log(error.response.data);
-                      for (var key in error.response.data){
-                          this.errors = error.response.data[key];
-                      }
-      })
-      this.loader = false
+    mounted() {
+    
   },
 methods: {
   }
