@@ -4,7 +4,7 @@
       <div class="instruction">
         <p class="text-instruction">УГАДАЙ СЛОВО:</p>
       </div>
-      <p style="font-size: 10px; text-align: right; margin: 0; padding-right: 10px;">{{ this.number }}/10</p>
+      <p style="font-size: 14px; text-align: right; margin: 0; padding-right: 10px;">{{ this.number }}/10</p>
       <div class="question">
 
         <div class="center-field">
@@ -23,34 +23,7 @@
           {{ this.notice }}
         </p>
       </div>
-      <div
-        class="button-prase"
-        :class="{ right: isRight0, false: isFalse0, disabled: this.is_pushed }"
-        v-on:click="isAnswer_0()"
-      >
-        {{ this.options[0] }}
-      </div>
-      <div
-        class="button-prase"
-        :class="{ right: isRight1, false: isFalse1, disabled: this.is_pushed }"
-        v-on:click="isAnswer_1()"
-      >
-        {{ this.options[1] }}
-      </div>
-      <div
-        class="button"
-        :class="{ right: isRight2, false: isFalse2, disabled: this.is_pushed }"
-        v-on:click="isAnswer_2()"
-      >
-        {{ this.options[2] }}
-      </div>
-      <div
-        class="button"
-        :class="{ right: isRight3, false: isFalse3, disabled: this.is_pushed }"
-        v-on:click="isAnswer_3()"
-      >
-        {{ this.options[3] }}
-      </div>
+        <answersButton v-for="button in buttons" :buttonProps="button" :disabled="disabled" @pushAnswer="pushAnswer"/>
     </div>
     <span>
       <p v-if="this.is_full == false">
@@ -77,13 +50,16 @@
   </body>
 </template>
 <script>
+import Button from "@/components/Button.vue";
 import config from "@/scripts/api-config";
 import axios from "axios";
 
 const API_URL = config["API_LOCATION"];
 
 export default {
-  name: "Lexicon",
+  components: {
+		answersButton: Button
+	},
   data() {
     return {
       isDisabled: false,
@@ -95,11 +71,13 @@ export default {
       option_2: "",
       option_3: "",
       options: [],
+      buttons: [],
       is_full: false,
       is_answered: "",
       notice: "",
       mistake: "",
       is_pushed: false,
+      disabled: false,
       isRight0: false,
       isRight1: false,
       isRight2: false,
@@ -134,6 +112,10 @@ export default {
       });
   },
   methods: {
+    pushAnswer(data) {
+      this.is_pushed = data.is_pushed;
+      this.disabled = true;
+    },
     NextVariant() {
       axios
         .post(
@@ -330,6 +312,13 @@ export default {
       this.options.push(this.option_2);
       this.options.push(this.option_3);
       this.options = this.options.sort(() => Math.random() - 0.5);
+      this.options.forEach(option => {
+        this.buttons.push({
+          title: option,
+          is_right: option == this.word,
+          is_pushed: false,
+        })
+      })
     },
     get_button_colors() {
       if (this.options[0] == this.word) {
@@ -344,6 +333,8 @@ export default {
     },
     page_vars_reset() {
       this.options = [];
+      this.buttons = [];
+      this.disabled = false;
       this.notice = "";
       this.is_pushed = false;
       this.isRight0 = false;

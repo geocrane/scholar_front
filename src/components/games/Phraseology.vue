@@ -3,7 +3,7 @@
     <div class="wrapper">
       <div class="instruction instruction-phrase">
       </div>
-      <p style="font-size: 10px; text-align: right; margin: 0; padding-right: 10px;">{{ this.number }}/10</p>
+      <p style="font-size: 14px; text-align: right; margin: 0; padding-right: 10px;">{{ this.number }}/10</p>
       <div class="question question-phrase">
         <!-- <div class="center-field center-field-phrase"> -->
           <p class="justify-phrase">
@@ -25,92 +25,52 @@
         </p>
       </div>
       <table>
-        <tr>
-          <td style="margin-right: 20px;">
-            <div
-              class="button-prase"
-              :class="{
-                right: isRight0,
-                false: isFalse0,
-                disabled: this.is_pushed
-              }"
-              v-on:click="isAnswer_0()"
-            >
-              <p>{{ this.options[0] }}</p>
-            </div>
-          </td>
-        </tr>
-        <tr>
+        <tr v-for="button in buttons">
           <td>
-            <div
-              class="button-prase"
-              :class="{
-                right: isRight1,
-                false: isFalse1,
-                disabled: this.is_pushed
-              }"
-              v-on:click="isAnswer_1()"
-            >
-              <p>{{ this.options[1] }}</p>
-            </div>
+            <answersButton :buttonProps="button" :disabled="disabled" @pushAnswer="pushAnswer"/>
           </td>
         </tr>
       </table>
     </div>
     <span>
-      <p v-if="this.is_full == false">
-        <button
-          :disabled="!this.is_pushed"
-          class="next-button next-button_phrase"
-          :class="{ inactivephrase: !this.is_pushed }"
-          v-on:click="NextVariant()"
-        >
-          Далее
-        </button>
-      </p>
-      <p v-else>
-        <button
-          :disabled="!this.is_pushed"
-          class="next-button next-button_phrase"
-          :class="{ inactivephrase: !this.is_pushed }"
-          v-on:click="isSummary()"
-        >
-          Завершить
-        </button>
-      </p>
-    </span>
+            <p v-if="this.is_full == false" ><button :disabled="!this.is_pushed" class="next-button next-button_phrase" :class="{inactivephrase: !this.is_pushed}" @click="NextVariant()"><span v-if="!this.loading">Далее</span><b-spinner v-else variant="light" small ></b-spinner></button></p>
+            <p v-else><button :disabled="!this.is_pushed" class="next-button next-button_phrase" :class="{inactivephrase: !this.is_pushed}" @click="isSummary()"><span v-if="!this.loading">Завершить</span><b-spinner v-else variant="light" small ></b-spinner></button></p>
+        </span>
   </body>
 </template>
 <script>
+import Button from "@/components/Button.vue";
 import config from "@/scripts/api-config";
 import axios from "axios";
 
 const API_URL = config["API_LOCATION"];
 
 export default {
-  name: "Lexicon",
+  components: {
+			answersButton: Button
+	},
   data() {
     return {
-      isDisabled: false,
       score: 0,
       number: "",
-      missed_letter: "",
       right_phrase: "",
       false_phrase: "",
       description: "",
       options: [],
+      buttons: [],
       is_full: false,
       is_answered: "",
       notice: "",
       mistake: "",
       is_pushed: false,
-      isRight0: false,
-      isRight1: false,
-      isFalse0: false,
-      isFalse1: false,
+      disabled: false,
       infoRight: false,
-      infoFalse: false
+      infoFalse: false,
+      loading: false,
     };
+  },
+  watch: {
+
   },
   mounted() {
     axios
@@ -123,7 +83,6 @@ export default {
           "/"
       )
       .then(response => {
-        console.log(response.data);
         this.vars_assignment(response.data);
       })
       .catch(error => {
@@ -134,6 +93,10 @@ export default {
       });
   },
   methods: {
+    pushAnswer(data) {
+      this.is_pushed = data.is_pushed;
+      this.disabled = true;
+    },
     NextVariant() {
       axios
         .post(
@@ -144,7 +107,6 @@ export default {
         )
         .then(response => {
           this.page_vars_reset();
-          console.log(response.data);
           this.$router.push({
             name: "phraseology",
             params: {
@@ -173,16 +135,9 @@ export default {
         this.infoRight = true;
         this.notice = "ВЕРНО!";
         if (this.is_answered == null) {
-          axios.patch(
-            API_URL +
-              "phraseology/" +
-              this.$route.params.session_id +
-              "/variants/" +
-              this.$route.params.variant_id +
-              "/",
-            { answer_field: 0, score: 1 }
-          );
+          this.update_variant(0, 1);
         }
+        else {this.is_pushed = true;}
       } else {
         this.isFalse0 = true;
         this.infoFalse = true;
@@ -190,18 +145,10 @@ export default {
         this.get_button_colors();
         // this.get_mistake_variant(this.options[0])
         if (this.is_answered == null) {
-          axios.patch(
-            API_URL +
-              "phraseology/" +
-              this.$route.params.session_id +
-              "/variants/" +
-              this.$route.params.variant_id +
-              "/",
-            { answer_field: 1, score: 0 }
-          );
+          this.update_variant(1, 0);
         }
+        else {this.is_pushed = true;}
       }
-      this.is_pushed = true;
     },
     isAnswer_1() {
       if (this.options[1] == this.right_phrase) {
@@ -209,16 +156,9 @@ export default {
         this.infoRight = true;
         this.notice = "ВЕРНО!";
         if (this.is_answered == null) {
-          axios.patch(
-            API_URL +
-              "phraseology/" +
-              this.$route.params.session_id +
-              "/variants/" +
-              this.$route.params.variant_id +
-              "/",
-            { answer_field: 0, score: 1 }
-          );
+          this.update_variant(0, 1);
         }
+        else {this.is_pushed = true;}
       } else {
         this.isFalse1 = true;
         this.infoFalse = true;
@@ -226,18 +166,10 @@ export default {
         this.get_button_colors();
         // this.get_mistake_variant(this.options[1])
         if (this.is_answered == null) {
-          axios.patch(
-            API_URL +
-              "phraseology/" +
-              this.$route.params.session_id +
-              "/variants/" +
-              this.$route.params.variant_id +
-              "/",
-            { answer_field: 1, score: 0 }
-          );
+          this.update_variant(1, 0);
         }
+        else {this.is_pushed = true;}
       }
-      this.is_pushed = true;
     },
 
     vars_assignment(data) {
@@ -250,7 +182,15 @@ export default {
       this.options.push(this.right_phrase);
       this.options.push(this.false_phrase);
       this.options = this.options.sort(() => Math.random() - 0.5);
+      this.options.forEach(option => {
+        this.buttons.push({
+          title: option,
+          is_right: option == this.right_phrase,
+          is_pushed: false,
+        })
+      })
     },
+
     get_button_colors() {
       if (this.options[0] == this.word) {
         this.isRight0 = true;
@@ -263,26 +203,40 @@ export default {
       }
     },
     page_vars_reset() {
+      this.buttons = [];
+      this.disabled = false;
       this.options = [];
       this.notice = "";
       this.is_pushed = false;
-      this.isRight0 = false;
-      this.isRight1 = false;
-      this.isRight2 = false;
-      this.isRight3 = false;
-      this.isFalse0 = false;
-      this.isFalse1 = false;
-      this.isFalse2 = false;
-      this.isFalse3 = false;
       this.infoRight = false;
       this.infoFalse = false;
+    },
+    update_variant(answer_field, score) {
+      this.variant_is_pushed = true
+      this.loading = true
+      axios.patch(
+            API_URL +
+              "phraseology/" +
+              this.$route.params.session_id +
+              "/variants/" +
+              this.$route.params.variant_id +
+              "/",
+            { answer_field: answer_field, score: score }
+      )
+        .then(_ => { this.is_pushed = true; this.loading = false})
+        .catch(err => {axios.patch(
+            API_URL +
+              "phraseology/" +
+              this.$route.params.session_id +
+              "/variants/" +
+              this.$route.params.variant_id +
+              "/",
+            { answer_field: answer_field, score: score }
+      )
+          .then(_ => { this.is_pushed = true; this.loading = false})
+          .catch(err => {
+              this.is_pushed = true; this.loading = false; this.infoFalse = true; this.notice = "!ОШИБКА СЕТИ!"}) });
     }
-    // get_mistake_variant(variant) {
-    //     this.mistake = ''
-    //     if (variant == this.option_1) {this.mistake = 1}
-    //     else if (variant == this.option_2) {this.mistake = 2}
-    //     else if (variant == this.option_3) {this.mistake = 3}
-    // },
   }
 };
 </script>

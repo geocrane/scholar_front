@@ -91,7 +91,7 @@ export default {
       } else if (header.data["quiz_type"] == "lexicon") {
         this.quiz_header = '"Лексикон"';
       } else if (header.data["quiz_type"] == "phraseology") {
-        this.quiz_header = '"Фразеология"';
+        this.quiz_header = '"Стилистика"';
       } else if (header.data["quiz_type"] == "NoActivities") {
         this.$router.push({ name: "noactivities" });
       }

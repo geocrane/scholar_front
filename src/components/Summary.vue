@@ -42,7 +42,7 @@ export default {
         this.quiz_header = '"Лексикон"'
       }
       else if (header.data["quiz_type"] == "phraseology"){
-        this.quiz_header = '"Фразеология"'
+        this.quiz_header = '"Стилистика"'
       }
     });
     this.loader = true

@@ -52,7 +52,7 @@ table{
 }
 
 .background {
-  background-image: url("~@/assets/styles/scholar_background_orth.jpg");
+  background-image: url("~@/assets/styles/scholar_background_phrase.jpg");
   background-repeat: no-repeat;
   background-position: center center;
   background-attachment: fixed;
