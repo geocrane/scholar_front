@@ -11,7 +11,9 @@
       <p
         style="font-size: 20px; font-weight: bold; color: #355DA4; text-align: center;"
       >
-        Викторина {{ this.quiz_header }}
+        <!-- Марафон. Этап 1. <br> {{ this.quiz_header }} -->
+        Марафон. Этап 2. <br> {{ this.quiz_header }}
+        <!-- Марафон. Этап 3. <br> {{ this.quiz_header }} -->
       </p>
       <div class="meaning-registration">
         <div class="registration">
@@ -41,7 +43,8 @@
           <p class="errors">{{ this.errors }}</p>
           <div class="reg-button">
             <button class="registration-button" v-on:click="SendAutorization()">
-              Начать
+              <span v-if="!this.loading">Начать</span>
+              <b-spinner v-else variant="dark" small ></b-spinner>
             </button>
           </div>
         </div>
@@ -61,6 +64,7 @@ export default {
   name: "Autorization",
   data() {
     return {
+      loading: false,
       first_name: "",
       last_name: "",
       bank: "",
@@ -86,12 +90,12 @@ export default {
   },
   mounted() {
     axios.get(API_URL + "get_actual_quiz/").then(header => {
-      if (header.data["quiz_type"] == "orthography") {
-        this.quiz_header = '"Орфография"';
-      } else if (header.data["quiz_type"] == "lexicon") {
-        this.quiz_header = '"Лексикон"';
-      } else if (header.data["quiz_type"] == "phraseology") {
-        this.quiz_header = '"Фразеология"';
+      if (header.data["quiz_code"] == "stage1_08092023") {
+        this.quiz_header = "Множественное число существительных";
+      } else if (header.data["quiz_code"] == "stage2_11092023") {
+        this.quiz_header = "Лексическая сочетаемость";
+      } else if (header.data["quiz_code"] == "stage3_12092023") {
+        this.quiz_header = "Синтаксическая норма";
       } else if (header.data["quiz_type"] == "NoActivities") {
         this.$router.push({ name: "noactivities" });
       }
@@ -99,6 +103,7 @@ export default {
   },
   methods: {
     SendAutorization() {
+      this.loading = true;
       axios
         .post(API_URL + "player/", {
           bank: this.bank,
@@ -108,7 +113,7 @@ export default {
           console.log(player.data);
           axios.get(API_URL + "get_actual_quiz/").then(quiz => {
             console.log(quiz.data);
-            if (quiz.data["quiz_type"] == "orthography") {
+            if (quiz.data["quiz_type"] == "t4") {
               axios
                 .post(API_URL + "sessions/", {
                   quiz: quiz.data["quiz_id"],
@@ -160,7 +165,7 @@ export default {
                       });
                     });
                 });
-            } else if (quiz.data["quiz_type"] == "phraseology") {
+            } else if (quiz.data["quiz_type"] == "t3") {
               axios
                 .post(API_URL + "sessions/", {
                   quiz: quiz.data["quiz_id"],
@@ -195,6 +200,7 @@ export default {
             this.errors = error.response.data[key][0];
           }
           console.log(this.errors[0]);
+          this.loading = false;
         });
     }
   }

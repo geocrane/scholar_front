@@ -259,7 +259,7 @@ p {
 }
 
 .question {
-  height: 85px;
+  /* height: 85px; */
   margin-top: 8px;
   margin-bottom: 15px;
 }

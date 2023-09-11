@@ -4,49 +4,55 @@ import Authorization from '@/components/Authorization'
 import NotFound from '@/components/error-pages/NotFound'
 import Lexicon from '@/components/games/Lexicon'
 import Orthography from '@/components/games/Orthography'
-import Phraseology from '@/components/games/Phraseology'
+import T3 from '@/components/games/T3'
+import T4 from "@/components/games/T4";
 import NoActivities from '@/components/games/NoActivities'
 import Summary from '@/components/Summary'
 
 Vue.use(Router)
 
 export default new Router({
-  mode: 'history',
+  mode: "history",
   routes: [
     {
-      path: '/',
-      name: 'Authorization',
+      path: "/",
+      name: "Authorization",
       component: Authorization
     },
     {
-      path: '/noactivities',
-      name: 'noactivities',
+      path: "/noactivities",
+      name: "noactivities",
       component: NoActivities
     },
     {
-      path: '/lexicon/:session_id/variants/:variant_id',
-      name: 'lexicon',
+      path: "/lexicon/:session_id/variants/:variant_id",
+      name: "lexicon",
       component: Lexicon
     },
     {
-      path: '/orthography/:session_id/variants/:variant_id',
-      name: 'orthography',
+      path: "/orthography/:session_id/variants/:variant_id",
+      name: "orthography",
       component: Orthography
     },
     {
-      path: '/phraseology/:session_id/variants/:variant_id',
-      name: 'phraseology',
-      component: Phraseology
+      path: "/t3/:session_id/variants/:variant_id",
+      name: "t3",
+      component: T3
     },
     {
-      path: '/:session_id/summary/',
-      name: 'summary',
+      path: "/t4/:session_id/variants/:variant_id",
+      name: "t4",
+      component: T4
+    },
+    {
+      path: "/:session_id/summary/",
+      name: "summary",
       component: Summary
     },
     {
-      path: '*',
-      name: 'NotFound',
+      path: "*",
+      name: "NotFound",
       component: NotFound
     }
   ]
-})
+});

@@ -1,14 +1,13 @@
 <template>
   <div id="app">
-      <router-view/>
+    <router-view />
   </div>
 </template>
 
 <script>
-
 export default {
-  name: 'App',
-}
+  name: "App"
+};
 </script>
 
 <style>
@@ -22,10 +21,10 @@ p {
   font-size: 18px;
 }
 
-table{
-    width: 100%;
-    text-align: center;
-    vertical-align: middle;
+table {
+  width: 100%;
+  text-align: center;
+  vertical-align: middle;
 }
 
 .disabled {
@@ -52,7 +51,7 @@ table{
 }
 
 .background {
-  background-image: url("~@/assets/styles/scholar_background_orth.jpg");
+  background-image: url("~@/assets/styles/5.jpg");
   background-repeat: no-repeat;
   background-position: center center;
   background-attachment: fixed;
@@ -112,13 +111,13 @@ table{
 
 .button {
   background: white;
-  height: 40px;
+  height: 60px;
   width: 250px;
   margin-left: auto;
   margin-right: auto;
   box-shadow: 1px 1px 5px 1px rgb(122, 122, 122, 0.5);
   border-radius: 7px;
-  padding-top: 2px;
+  padding-top: 10px;
   padding-bottom: 0px;
   color: #000000;
   font-size: 20px;
@@ -149,13 +148,13 @@ table{
   background-color: rgb(253, 109, 109);
 }
 
+/* 4 игра */
 .next-button {
-  /* Позиционируем внизу main */
   position: absolute;
   bottom: 0;
   width: 100%;
   height: 60px;
-  background: #52809e;
+  background: #9e527b;
   margin-left: auto;
   margin-right: auto;
   color: #ffffff;
@@ -168,6 +167,53 @@ table{
 
 .inactive {
   color: rgb(204, 204, 204);
-  background: #badce9;
+  background: #b37f91;
 }
+
+
+/* 5 игра */
+/* .next-button {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 60px;
+  background: #5c529e;
+  margin-left: auto;
+  margin-right: auto;
+  color: #ffffff;
+  font-size: 20px;
+  font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+  text-align: center;
+  padding-top: 5px;
+  margin-bottom: 0;
+}
+
+.inactive {
+  color: rgb(204, 204, 204);
+  background: #847fb3;
+} */
+
+
+/* 6 игра */
+/* .next-button {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 60px;
+  background: #9e527b;
+  margin-left: auto;
+  margin-right: auto;
+  color: #ffffff;
+  font-size: 20px;
+  font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+  text-align: center;
+  padding-top: 5px;
+  margin-bottom: 0;
+}
+
+.inactive {
+  color: rgb(204, 204, 204);
+  background: #b37f91;
+} */
+
 </style>

@@ -206,7 +206,7 @@ export default {
           );
         }
       }
-      this.is_pushed = true;
+      this.is_pushed = false;
     },
     isAnswer_1() {
       if (this.options[1] == this.word) {
@@ -387,7 +387,7 @@ p {
 }
 
 .question {
-  height: 85px;
+  /* height: 85px; */
   margin-top: 8px;
   margin-bottom: 15px;
 }

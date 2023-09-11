@@ -1,15 +1,30 @@
 <template>
   <body class="background">
     <div class="wrapper">
-      <div class="instruction instruction-phrase">
-      </div>
-      <p style="font-size: 10px; text-align: right; margin: 0; padding-right: 10px;">{{ this.number }}/10</p>
+      <div class="instruction instruction-phrase"></div>
+      <p
+        style="font-size: 10px; text-align: right; margin: 0; padding-right: 10px;"
+      >
+        {{ this.number }}/10
+      </p>
       <div class="question question-phrase">
         <!-- <div class="center-field center-field-phrase"> -->
-          <p class="justify-phrase">
-            <span v-if="!this.is_pushed"><br><p class="choose-info">ВЫБЕРИ ПРАВИЛЬНОЕ ВЫРАЖЕНИЕ:</p></span>
-            <span class="justify description" v-else>{{ this.description }}</span>
-          </p>
+        <p class="justify-phrase">
+          <span v-if="!this.is_pushed"
+            ><br />
+            <p class="choose-info">ВЫБЕРИ ПРАВИЛЬНОЕ ВЫРАЖЕНИЕ:</p></span
+          >
+          <span class="justify description" v-else>
+            <span v-if="(this, infoFalse)"
+              >ОШИБКА: <br />
+              {{ this.description }}</span
+            >
+            <span v-else
+              ><br />
+              <p class="choose-info"></p
+            ></span>
+          </span>
+        </p>
         <!-- </div> -->
       </div>
       <div class="info-field info-field-phrase">
@@ -36,7 +51,7 @@
               }"
               v-on:click="isAnswer_0()"
             >
-              <p>{{ this.options[0] }}</p>
+              <p class="btn-phrase">{{ this.options[0] }}</p>
             </div>
           </td>
         </tr>
@@ -51,7 +66,7 @@
               }"
               v-on:click="isAnswer_1()"
             >
-              <p>{{ this.options[1] }}</p>
+              <p class="btn-phrase">{{ this.options[1] }}</p>
             </div>
           </td>
         </tr>
@@ -65,7 +80,8 @@
           :class="{ inactivephrase: !this.is_pushed }"
           v-on:click="NextVariant()"
         >
-          Далее
+          <span v-if="!this.loading">Далее</span>
+          <b-spinner v-else variant="light" small></b-spinner>
         </button>
       </p>
       <p v-else>
@@ -75,7 +91,8 @@
           :class="{ inactivephrase: !this.is_pushed }"
           v-on:click="isSummary()"
         >
-          Завершить
+          <span v-if="!this.loading">Завершить</span
+          ><b-spinner v-else variant="light" small></b-spinner>
         </button>
       </p>
     </span>
@@ -109,14 +126,15 @@ export default {
       isFalse0: false,
       isFalse1: false,
       infoRight: false,
-      infoFalse: false
+      infoFalse: false,
+      loading: false
     };
   },
   mounted() {
     axios
       .get(
         API_URL +
-          "phraseology/" +
+          "t3/" +
           this.$route.params.session_id +
           "/variants/" +
           this.$route.params.variant_id +
@@ -135,31 +153,38 @@ export default {
   },
   methods: {
     NextVariant() {
+      this.is_pushed = false;
+      this.loading = true;
       axios
-        .post(
-          API_URL +
-            "phraseology/" +
-            this.$route.params.session_id +
-            "/variants/"
-        )
+        .post(API_URL + "t3/" + this.$route.params.session_id + "/variants/")
         .then(response => {
+          console.log("resp");
           this.page_vars_reset();
           console.log(response.data);
           this.$router.push({
-            name: "phraseology",
+            name: "t3",
             params: {
               session_id: this.$route.params.session_id,
               variant_id: response.data["variant_id"]
             }
           });
+          console.log("push");
           this.vars_assignment(response.data);
+          this.is_pushed = false;
+          this.loading = false;
         })
         .catch(error => {
+          console.log("err");
+          this.is_pushed = false;
           console.log(error.response.data);
           for (var key in error.response.data) {
             this.errors = error.response.data[key];
           }
+          this.loading = false;
+          this.is_pushed = false;
         });
+      console.log("Ok");
+      this.is_pushed = false;
     },
     isSummary() {
       this.$router.push({
@@ -168,20 +193,13 @@ export default {
       });
     },
     isAnswer_0() {
+      this.is_pushed = true;
       if (this.options[0] == this.right_phrase) {
         this.isRight0 = true;
         this.infoRight = true;
         this.notice = "ВЕРНО!";
         if (this.is_answered == null) {
-          axios.patch(
-            API_URL +
-              "phraseology/" +
-              this.$route.params.session_id +
-              "/variants/" +
-              this.$route.params.variant_id +
-              "/",
-            { answer_field: 0, score: 1 }
-          );
+          this.update_variant(0, 1);
         }
       } else {
         this.isFalse0 = true;
@@ -190,34 +208,18 @@ export default {
         this.get_button_colors();
         // this.get_mistake_variant(this.options[0])
         if (this.is_answered == null) {
-          axios.patch(
-            API_URL +
-              "phraseology/" +
-              this.$route.params.session_id +
-              "/variants/" +
-              this.$route.params.variant_id +
-              "/",
-            { answer_field: 1, score: 0 }
-          );
+          this.update_variant(1, 0);
         }
       }
-      this.is_pushed = true;
     },
     isAnswer_1() {
+      this.is_pushed = true;
       if (this.options[1] == this.right_phrase) {
         this.isRight1 = true;
         this.infoRight = true;
         this.notice = "ВЕРНО!";
         if (this.is_answered == null) {
-          axios.patch(
-            API_URL +
-              "phraseology/" +
-              this.$route.params.session_id +
-              "/variants/" +
-              this.$route.params.variant_id +
-              "/",
-            { answer_field: 0, score: 1 }
-          );
+          this.update_variant(0, 1);
         }
       } else {
         this.isFalse1 = true;
@@ -226,18 +228,9 @@ export default {
         this.get_button_colors();
         // this.get_mistake_variant(this.options[1])
         if (this.is_answered == null) {
-          axios.patch(
-            API_URL +
-              "phraseology/" +
-              this.$route.params.session_id +
-              "/variants/" +
-              this.$route.params.variant_id +
-              "/",
-            { answer_field: 1, score: 0 }
-          );
+          this.update_variant(1, 0);
         }
       }
-      this.is_pushed = true;
     },
 
     vars_assignment(data) {
@@ -276,17 +269,61 @@ export default {
       this.isFalse3 = false;
       this.infoRight = false;
       this.infoFalse = false;
-    }
+    },
     // get_mistake_variant(variant) {
     //     this.mistake = ''
     //     if (variant == this.option_1) {this.mistake = 1}
     //     else if (variant == this.option_2) {this.mistake = 2}
     //     else if (variant == this.option_3) {this.mistake = 3}
     // },
+    update_variant(answer_field, score) {
+      this.variant_is_pushed = true;
+      this.loading = true;
+      axios
+        .patch(
+          API_URL +
+            "t3/" +
+            this.$route.params.session_id +
+            "/variants/" +
+            this.$route.params.variant_id +
+            "/",
+          { answer_field: answer_field, score: score }
+        )
+        .then(_ => {
+          this.loading = false;
+        })
+        .catch(err => {
+          axios
+            .patch(
+              API_URL +
+                "t3/" +
+                this.$route.params.session_id +
+                "/variants/" +
+                this.$route.params.variant_id +
+                "/",
+              { answer_field: answer_field, score: score }
+            )
+            .then(_ => {
+              this.loading = false;
+            })
+            .catch(err => {
+              this.loading = false;
+              this.infoFalse = true;
+              this.notice = "!ОШИБКА СЕТИ!";
+            });
+        });
+      this.loading = false;
+    }
   }
 };
 </script>
 <style>
+p {
+  /* margin-top: 0px; */
+  font-size: 5vw;
+  /* line-height: 1.5; */
+}
+
 .justify-phrase {
   text-align: justify;
   margin-bottom: 0;
@@ -294,9 +331,10 @@ export default {
 
 .description {
   font-size: 18px;
+  vertical-align: middle;
 }
 
-.choose-info{
+.choose-info {
   font-size: 24px;
   text-align: center;
   vertical-align: middle;
@@ -310,9 +348,10 @@ export default {
   padding-top: 15px;
   padding-bottom: 15px;
   overflow-y: scroll;
+  /* line-height: 170px; */
 }
 
-.center-field-phrase{
+.center-field-phrase {
   height: 110px;
 }
 
@@ -330,31 +369,57 @@ export default {
 
 .button-prase {
   background: white;
-  height: 60px;
+  height: 80px;
   width: 90%;
   margin-top: 10px;
   margin-left: auto;
   margin-right: auto;
   box-shadow: 1px 1px 5px 1px rgb(122, 122, 122, 0.5);
   border-radius: 7px;
-  padding-top: 15px;
+  padding-top: 0px;
   padding-bottom: 0px;
   color: #000000;
-  font-size: 20px;
+  /* font-size: calc(1em + 0.8vw); */
   font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 0px;
+  line-height: 80px;
+  display: flex; /* использование flexbox */
+  justify-content: center; /* выравнивание по центру по горизонтали */
+  align-items: center; /* выравнивание по центру по вертикали */
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-top: 10px;
 }
 
+.btn-phrase {
+  line-height: 1.3;
+  font-size: calc(1em + 0.7vw);
+}
+
+/* Игра 5 */
 .next-button_phrase {
-  background: #538f73;
+  background: #4877b5;
   color: #ffffff;
 }
 
 .inactivephrase {
   color: rgb(221, 219, 219);
-  background: #acd4c0;
+  background: #acbbd4;
 }
+
+/* Игра 6 */
+/* .next-button_phrase {
+  background: #04a554;
+  color: #ffffff;
+}
+
+.inactivephrase {
+  color: rgb(221, 219, 219);
+  background: #acd4ad;
+} */
+
+/* ---------------- */
 
 .right {
   color: white;
@@ -378,66 +443,73 @@ export default {
 }
 
 @media (max-height: 515px) {
-p {
-  font-size: 14px;
-}
+  p {
+    /* margin-top: 0px; */
+    font-size: 5vw;
+    /* line-height: 1.5; */
+  }
 
-.choose-info{
-  font-size: 18px;
-}
+  .choose-info {
+    font-size: 18px;
+  }
 
-.info {
-  font-size: 20px;
-}
+  .info {
+    font-size: 20px;
+  }
 
-.info-field {
-  height: 35px;
-  margin-bottom: 5%;
-}
+  .info-field {
+    height: 35px;
+    margin-bottom: 5%;
+  }
 
-.info-field-phrase {
-  /* height: 45px; */
-  margin-bottom: 0px;
-}
+  .info-field-phrase {
+    /* height: 45px; */
+    margin-bottom: 0px;
+  }
 
-.question-phrase {
-  /* height: auto; */
-  height: 160px;
-  margin-top: 5px;
-  margin-bottom: 10px;
-  padding-top: 25px;
-  padding-bottom: 25px;
-  overflow-y: scroll;
-}
+  .question-phrase {
+    /* height: auto; */
+    height: 160px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    padding-top: 25px;
+    padding-bottom: 25px;
+    overflow-y: scroll;
+  }
 
-.center-field-phrase{
-  /* height: auto; */
-  height: 100px;
-  /* overflow-y: scroll; */
-}
+  .center-field-phrase {
+    /* height: auto; */
+    height: 100px;
+    /* overflow-y: scroll; */
+  }
 
-.button-prase {
-  height: 45px;
-  width: 200px;
-  font-size: 18px;
-  margin-top: 3%;
-  margin-bottom: 3%;
-  padding-top: 9px;
-}
+  .button-prase {
+    height: 55px;
+    /* width: 200px; */
+    font-size: 18px;
+    margin-top: 3%;
+    margin-bottom: 3%;
+    /* padding-top: 0px; */
+    line-height: 55px;
+  }
 
-.instruction {
-  padding-top: 10px;
-}
+  .btn-phrase {
+    line-height: 1.2;
+    font-size: calc(0.8em + 0.01vw);
+  }
 
-.text-instruction {
-  font-size: 15px;
-}
+  .instruction {
+    padding-top: 10px;
+  }
 
-.next-button {
-  height: 50px;
-  font-size: 18px;
-  padding-top: 3px;
-}
-}
+  .text-instruction {
+    font-size: 15px;
+  }
 
+  .next-button {
+    height: 50px;
+    font-size: 18px;
+    padding-top: 3px;
+  }
+}
 </style>
