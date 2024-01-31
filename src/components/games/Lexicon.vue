@@ -23,7 +23,7 @@
           {{ this.notice }}
         </p>
       </div>
-        <answersButton v-for="button in buttons" :buttonProps="button" :disabled="disabled" @pushAnswer="pushAnswer"/>
+        <answersButton v-for="button in buttons" :key="button.id" :buttonProps="button" :disabled="disabled" @pushAnswer="pushAnswer"/>
     </div>
     <span>
       <p v-if="this.is_full == false">
