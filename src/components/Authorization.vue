@@ -1,53 +1,60 @@
 <template>
   <body class="background">
-    <div class="wrapper">
-      <p class="text-tittle">
+    <div class="auth-wrapper">
+      <!-- Логотип Грамотея -->
+      <p class="auth-logo">
         <img
-          src="~@/assets/styles/gramotey.png"
+          src="~@/assets/styles/gramotey_white.png"
           style="margin-top: 20px;"
           width="100"
         />
       </p>
-      <p
-        style="font-size: 20px; font-weight: bold; color: #355DA4; text-align: center;"
-      >
-        Викторина {{ this.quiz_header }}
-      </p>
-      <div class="meaning-registration">
-        <div class="registration">
-          <fieldset class="field">
-            <p style="font-weight: bold; color: #355DA4;">
-              <label for="territorial_bank">Тер. банк:</label>
+
+      <!-- Название Викторины -->
+      <p class="auth-title"> Викторина: "Стань Грамотеем"</p>
+
+      <!-- Раздел авторизации (располагает по центру) -->
+      <div class="auth-block">
+
+        <!-- Авторизация -->
+        <div class="auth-background-field box-shadow-5">
+
+          <!-- Набор полей ТБ и ТН -->
+          <fieldset class="auth-fields-text">
+            <div>
+              <label class="auth-labels" for="territorial_bank">Тер. банк:&#8201;&#8201;&#8201;&#8201;</label>
               <select
-                class="bank-select"
+                class="auth-bank-select box-shadow-3"
                 v-model="bank"
                 type="text"
                 id="territorial_bank"
               >
                 <option v-for="bank in this.ter_banks">{{ bank }}</option>
               </select>
-            </p>
-            <p style="font-weight: bold; margin-bottom: 5px; color: #355DA4;">
-              <label for="personnel_number">Таб. номер:</label
+            </div>
+
+            <div>
+              <label class="auth-labels" for="personnel_number">Таб. номер:</label
               ><input
-                class="number-input"
+                class="auth-number-input box-shadow-3"
                 v-model="personnel_number"
                 type="text"
                 id="personnel_number"
                 placeholder="0XXXXXXX"
               />
-            </p>
+              </div>
           </fieldset>
+
+          <!-- Сообщение об ошибке авторизации -->
           <p class="errors">{{ this.errors }}</p>
-          <div class="reg-button">
-            <button class="registration-button" v-on:click="SendAutorization()">
+        </div>
+      </div> <!-- Конец авторизации -->
+
+      <!-- Кнопка Начать -->
+            <button class="auth-button" v-on:click="SendAutorization()">
               Начать
             </button>
-          </div>
-        </div>
-      </div>
-      <div class="variants"></div>
-    </div>
+    </div> <!-- Конец wrapper -->
   </body>
 </template>
 
@@ -61,13 +68,10 @@ export default {
   name: "Autorization",
   data() {
     return {
-      first_name: "",
-      last_name: "",
       bank: "",
       personnel_number: "",
       session_id: "",
       errors: "",
-      quiz_header: "",
       ter_banks: [
         "ЦА",
         "ББ",
@@ -84,128 +88,55 @@ export default {
       ]
     };
   },
-  mounted() {
-    axios.get(API_URL + "get_actual_quiz/").then(header => {
-      if (header.data["quiz_type"] == "orthography") {
-        this.quiz_header = '"Орфография"';
-      } else if (header.data["quiz_type"] == "lexicon") {
-        this.quiz_header = '"Лексикон"';
-      } else if (header.data["quiz_type"] == "phraseology") {
-        this.quiz_header = '"Стилистика"';
-      } else if (header.data["quiz_type"] == "NoActivities") {
-        this.$router.push({ name: "noactivities" });
-      }
-    });
-  },
+  mounted() { },
   methods: {
     SendAutorization() {
-      axios
-        .post(API_URL + "player/", {
-          bank: this.bank,
-          personnel_number: this.personnel_number
-        })
-        .then(player => {
-          console.log(player.data);
-          axios.get(API_URL + "get_actual_quiz/").then(quiz => {
-            console.log(quiz.data);
-            if (quiz.data["quiz_type"] == "orthography") {
-              axios
-                .post(API_URL + "sessions/", {
-                  quiz: quiz.data["quiz_id"],
-                  player: player.data["id"]
-                })
-                .then(session => {
-                  console.log(session.data);
-                  axios
-                    .post(
-                      API_URL +
-                        quiz.data["quiz_type"] +
-                        "/" +
-                        session.data["id"] +
-                        "/variants/"
-                    )
-                    .then(variant => {
-                      this.$router.push({
-                        name: quiz.data["quiz_type"],
-                        params: {
-                          session_id: variant.data["session_id"],
-                          variant_id: variant.data["variant_id"]
-                        }
-                      });
-                    });
-                });
-            } else if (quiz.data["quiz_type"] == "lexicon") {
-              axios
-                .post(API_URL + "sessions/", {
-                  quiz: quiz.data["quiz_id"],
-                  player: player.data["id"]
-                })
-                .then(session => {
-                  console.log(session.data);
-                  axios
-                    .post(
-                      API_URL +
-                        quiz.data["quiz_type"] +
-                        "/" +
-                        session.data["id"] +
-                        "/variants/"
-                    )
-                    .then(variant => {
-                      this.$router.push({
-                        name: quiz.data["quiz_type"],
-                        params: {
-                          session_id: variant.data["session_id"],
-                          variant_id: variant.data["variant_id"]
-                        }
-                      });
-                    });
-                });
-            } else if (quiz.data["quiz_type"] == "phraseology") {
-              axios
-                .post(API_URL + "sessions/", {
-                  quiz: quiz.data["quiz_id"],
-                  player: player.data["id"]
-                })
-                .then(session => {
-                  console.log(session.data);
-                  axios
-                    .post(
-                      API_URL +
-                        quiz.data["quiz_type"] +
-                        "/" +
-                        session.data["id"] +
-                        "/variants/"
-                    )
-                    .then(variant => {
-                      this.$router.push({
-                        name: quiz.data["quiz_type"],
-                        params: {
-                          session_id: variant.data["session_id"],
-                          variant_id: variant.data["variant_id"]
-                        }
-                      });
-                    });
-                });
+      axios.post(
+        API_URL + "player/", {
+        bank: this.bank, personnel_number: this.personnel_number
+      }
+      )
+        .then(
+          player => {
+            axios.post(
+              API_URL + "session/", {
+              player: player.data["id"]
             }
-          });
-        })
-        .catch(error => {
-          console.log(error.response.data);
-          for (var key in error.response.data) {
-            this.errors = error.response.data[key][0];
+            )
+              .then(
+                session => {
+                  axios.get(
+                    API_URL + "session/" + session.data["id"] + "/1/"
+                  )
+                    .then(
+                      question => {
+                        this.$router.push(
+                          {
+                            name: "question", params: {
+                              session_id: question.data["session"], question_number: question.data["number"]
+                            }
+                          }
+                        );
+                      }
+                    )
+                    .catch(error => {
+                      console.log(error.response.data);
+                      for (var key in error.response.data) {
+                        this.errors = error.response.data[key][0];
+                      }
+                      console.log(this.errors[0]);
+                    });
+                }
+              );
           }
-          console.log(this.errors[0]);
-        });
+        );
     }
   }
-};
+}
 </script>
 
 <style>
-body {
-  min-height: 100vh;
-  padding: 0;
-}
+
 
 input {
   width: 100px;
@@ -215,166 +146,129 @@ select {
   width: 100px;
 }
 
-.wrapper {
-  margin: auto;
-  /* background-color: azure; */
-  width: 90%;
-  height: 600px;
-  position: relative;
+.auth-wrapper {
+  display: grid;
+  place-items: center;
+  height: 100vh;
+  margin: 0;
+  grid-template-rows: auto 0.3fr 1fr 50px 1fr;
+  width: 100%;
+  max-width: 500px;
 }
 
-/* .tittle {
-    background-color: rgb(166, 215, 230);
-} */
-
-.text-tittle {
+.auth-logo {
+  /* background-color: rgb(2, 68, 68); */
   font-size: 200%;
   text-align: center;
+  grid-row: 1;
 }
 
-.meaning-registration {
+.auth-title {
+  /* background-color: rgb(2, 68, 68); */
+  font-size: 16px;
+  font-weight: bold;
+  color: #ffffff;
+  text-align: center;
+  grid-row: 2;
+}
+
+.auth-block {
+  padding: 0;
   /* background-color: rgb(182, 166, 230); */
   text-align: center;
   vertical-align: middle;
-  padding-top: 50px;
+  grid-row: 3;
 }
 
-.meaning {
-  /* background-color: rgb(182, 166, 230); */
-  text-align: center;
-  vertical-align: middle;
-  /* height: 40%; */
-}
-
-.registration {
-  /* display: inline-block; */
-  margin: 0 auto;
-  width: 230px;
-}
-
-.field {
-  clear: both;
-  text-align: right;
-  line-height: 45px;
-  border: none;
-}
-
-.bank-select {
-  /* width: 210px; */
-  height: 45px;
-  background-color: #fff;
-  border-style: solid;
-  border-radius: 2px;
-  border-width: 1px;
-  border-color: gray;
-}
-
-.number-input {
-  height: 45px;
-}
-
-.variants {
-  /* background-color: rgb(220, 241, 245); */
-  /* height: 200px; */
-  display: inline-block;
-  margin: 0 auto;
-  width: 100%;
-  text-align: center;
-  position: absolute;
-  bottom: 50px;
-}
-
-label {
-  float: left;
-  padding-right: 10px;
-}
-
-.reg-button {
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.registration-button {
-  margin-top: 20px;
-  /* position: relative; */
-  /* margin-left: auto;
-  margin-right: auto;
-  transform: translate(-50%, 0); */
-  appearance: none;
-  border-color: #cecece;
-  border-radius: 5px;
-  background: #ffffff;
-  color: #242424;
-  padding: 8px 16px;
-  font-size: 20px;
-  width: 170px;
-}
-
-/* .variants-table {
-  display: inline-block;
-} */
-
-/* .variant-button {
-  appearance: none;
-  border: 0;
-  border-radius: 5px;
-  background: #46a9d7;
+.auth-background-field {
+  display: grid;
+  place-items: center;
+  grid-template-rows: 1fr;
+  margin: 0;
+  padding-top: 15px;
+  height: 140px;
+  width: 250px;
+  border-radius: 15px;
+  background-color: rgba(255, 255, 255, 0.2);
   color: #fff;
-  padding: 8px 16px;
-  font-size: 18px;
-  margin-bottom: 10px;
-  width: 280px;
-} */
+}
 
-/* .next-button {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  appearance: none;
-  border-color: #cecece;
-  border-radius: 5px;
-  background: #ffffff;
-  color: #242424;
-  padding: 8px 16px;
-  font-size: 20px;
-  margin-bottom: -10px;
-  width: 170px;
-} */
+.auth-fields-text {
+  grid-row: 1;
+  display: grid;
+  place-items: center;
+  grid-template-rows: 1fr 1fr;
+  height: 100px;
+  font-size: 16px;
+  font-weight: normal;
+  color: #fff;
+  /* background-color: #d74646; */
+  margin: 0;
+  padding: 0;
+}
 
-/* .question {
-  text-align: justify;
-  font-size: 18px;
-} */
+.auth-labels {
+  margin: 0;
+  padding: 0;
+  float: left;
+  padding-right: 30px;
+}
 
-.score {
-  /* background-color: rgb(171, 196, 243); */
-  height: 50px;
+.auth-bank-select {
+  grid-row: 1;
+  height: 30px;
+  width: 100px;
+  background-color: rgba(255, 255, 255, 0.4);
+  border-radius: 8px;
+  border-width: 0;
+  color: #fff;
   text-align: center;
+  margin: 0;
+  padding: 0;
 }
 
-.score-text {
-  font-size: 38px;
+.auth-bank-select:focus {
+  background-color: #d0d0d0;
+  border-radius: 8px;
+  border-width: 0;
+  color: #fff;
 }
 
-.right {
-  background: #46d74d;
+.auth-number-input {
+  grid-row: 2;
+  height: 30px;
+  width: 100px;
+  background-color: rgba(255, 255, 255, 0.4);
+  border-radius: 6px;
+  border-width: 0;
+  color: #fff;
+  padding: 10px;
 }
 
-.false {
-  background: #d74646;
+.auth-number-input:focus {
+  background-color: #d0d0d0;
+  border-radius: 6px;
+  border-width: 0;
+  color: #fff;
 }
 
-.errors {
-  color: red;
-  font-size: 12px;
+.auth-button {
+  grid-row: 4;
+  margin-top: 15px;
+  height: 35px;
+  font-size: 18px;
+  width: 170px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  border-width: 0;
+  color: #fff;
+  box-shadow: 1.5px 1.5px 1.5px rgba(0, 0, 0, 0.5);
 }
 
-@media (max-height: 575px) {
-  .meaning-registration {
-    /* background-color: rgb(182, 166, 230); */
-    text-align: center;
-    vertical-align: middle;
-    padding-top: 20px;
-  }
+.auth-button:focus{
+  background-color: rgba(255, 255, 255, 0.18);
+  box-shadow: inset 1.5px 1px 0.1px rgba(0, 0, 0, 0.5);
+  padding-right: 5px;
+  padding-top: 3.5px;
 }
 </style>

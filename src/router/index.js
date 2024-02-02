@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Authorization from '@/components/Authorization'
 import NotFound from '@/components/error-pages/NotFound'
+import Question from '@/components/games/Question'
 import Lexicon from '@/components/games/Lexicon'
 import Orthography from '@/components/games/Orthography'
 import Phraseology from '@/components/games/Phraseology'
@@ -22,6 +23,11 @@ export default new Router({
       path: '/noactivities',
       name: 'noactivities',
       component: NoActivities
+    },
+    {
+      path: '/session/:session_id/:question_number',
+      name: 'question',
+      component: Question
     },
     {
       path: '/lexicon/:session_id/variants/:variant_id',

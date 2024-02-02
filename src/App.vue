@@ -12,14 +12,10 @@ export default {
 </script>
 
 <style>
-body {
-  min-height: 100vh;
-  padding: 0;
-}
 
 p {
   font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
-  font-size: 18px;
+  margin: 0;
 }
 
 table{
@@ -52,14 +48,20 @@ table{
 }
 
 .background {
-  background-image: url("~@/assets/styles/scholar_background_phrase.jpg");
+
+  background-image: linear-gradient(to bottom right, #1F1A3F, #0B5244);
+  background-size: 100% 100%;
   background-repeat: no-repeat;
   background-position: center center;
-  background-attachment: fixed;
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  -o-background-size: cover;
-  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.box-shadow-3 {
+    box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.3);
+}
+
+.box-shadow-5 {
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.4);
 }
 
 .info-field {
@@ -73,16 +75,6 @@ table{
 
 .right-align {
   text-align: right;
-}
-
-.wrapper {
-  width: 100%;
-  max-width: 500px;
-  height: 90vh;
-  max-height: 800px;
-  position: relative;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .question {
