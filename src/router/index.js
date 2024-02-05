@@ -1,15 +1,16 @@
-import Vue from 'vue'
-import Router from 'vue-router'
-import Authorization from '@/components/Authorization'
-import NotFound from '@/components/error-pages/NotFound'
-import Lexicon from '@/components/games/Lexicon'
-import Orthography from '@/components/games/Orthography'
-import T3 from '@/components/games/T3'
+import Authorization from "@/components/Authorization";
+import Summary from "@/components/Summary";
+import NotFound from "@/components/error-pages/NotFound";
+import Lexicon from "@/components/games/Lexicon";
+import NoActivities from "@/components/games/NoActivities";
+import Orthography from "@/components/games/Orthography";
+import Question from "@/components/games/Question";
+import T3 from "@/components/games/T3";
 import T4 from "@/components/games/T4";
-import NoActivities from '@/components/games/NoActivities'
-import Summary from '@/components/Summary'
+import Vue from "vue";
+import Router from "vue-router";
 
-Vue.use(Router)
+Vue.use(Router);
 
 export default new Router({
   mode: "history",
@@ -23,6 +24,11 @@ export default new Router({
       path: "/noactivities",
       name: "noactivities",
       component: NoActivities
+    },
+    {
+      path: "/session/:session_id/:question_number",
+      name: "question",
+      component: Question
     },
     {
       path: "/lexicon/:session_id/variants/:variant_id",

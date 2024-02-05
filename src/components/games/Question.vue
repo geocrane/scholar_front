@@ -1,52 +1,43 @@
 <template>
   <body class="background">
-    <div class="wrapper">
-      <div class="instruction">
-        <p class="text-instruction">УГАДАЙ СЛОВО:</p>
-      </div>
-      <p style="font-size: 14px; text-align: right; margin: 0; padding-right: 10px;">{{ this.number }}/10</p>
-      <div class="question">
+    <div class="quest-wrapper">
 
-        <div class="center-field">
-          <p class="justify">{{ this.meaning }}</p>
-        </div>
+      <!-- Сообщение о достижении -->
+      <div class="quest-achievement">
+        <p>Достижение</p>
       </div>
-      <div class="info-field">
-        <p
-          class="info"
-          :class="{
-            right: this.infoRight,
-            false: this.infoFalse,
-            disabled: this.is_pushed
-          }"
+
+      <!-- Панель с номерами вопросов -->
+      <div class="quest-numbers">
+        <p style="font-size: 14px; text-align: right; margin: 0; padding-right: 10px;">{{ this.number }}</p>
+      </div>
+
+      <!-- Вопрос -->
+      <div class="quest-question">
+        <p class="quest-question-text">
+          {{ this.preamble }}<br>{{ this.fable }} Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolore ipsam esse iure cum, quos voluptatibus voluptates qui! Provident consequuntur unde necessitatibus iure at veniam, nam repudiandae rem illum soluta tempora.</p>
+      </div>
+
+      <!-- Кнопки с ответами -->
+      <div :class="{'quest-variants-btn-4': variants.length > 2, 'quest-variants-btn-2': variants.length === 2}" class="quest-variants-btn">
+        <answersButton v-for="variant in variants" :key="variant.id" :buttonProps="variant" :disabled="disabled" @pushAnswer="pushAnswer"/>
+      </div>
+
+      <!-- Кнопка отправить ответ -->
+      <div class="quest-next-btn">
+       <p>
+        <button class="next-btn"
+          :disabled="!this.is_pushed"
+          v-on:click="PushAnswer()"
         >
-          {{ this.notice }}
-        </p>
-      </div>
-        <answersButton v-for="button in buttons" :key="button.id" :buttonProps="button" :disabled="disabled" @pushAnswer="pushAnswer"/>
+          ОТВЕТИТЬ
+        </button>
+      </p>
     </div>
-    <span>
-      <p v-if="this.is_full == false">
-        <button
-          :disabled="!this.is_pushed"
-          class="next-button"
-          :class="{ inactive: !this.is_pushed }"
-          v-on:click="NextVariant()"
-        >
-          Далее
-        </button>
-      </p>
-      <p v-else>
-        <button
-          :disabled="!this.is_pushed"
-          class="next-button"
-          :class="{ inactive: !this.is_pushed }"
-          v-on:click="isSummary()"
-        >
-          Завершить
-        </button>
-      </p>
-    </span>
+
+    </div>
+
+
   </body>
 </template>
 <script>
@@ -62,43 +53,26 @@ export default {
 	},
   data() {
     return {
-      isDisabled: false,
-      score: 0,
+      session: "",
       number: "",
-      meaning: "",
-      word: "",
-      option_1: "",
-      option_2: "",
-      option_3: "",
-      options: [],
-      buttons: [],
-      is_full: false,
       is_answered: "",
-      notice: "",
-      mistake: "",
-      is_pushed: false,
-      disabled: false,
-      isRight0: false,
-      isRight1: false,
-      isRight2: false,
-      isRight3: false,
-      isFalse0: false,
-      isFalse1: false,
-      isFalse2: false,
-      isFalse3: false,
-      infoRight: false,
-      infoFalse: false
+      is_correct_answer: "",
+      preamble: "",
+      fable: "",
+      example: "",
+      comment: "",
+      variants: [],
     };
   },
   mounted() {
     axios
       .get(
-        API_URL +
-          "lexicon/" +
-          this.$route.params.session_id +
-          "/variants/" +
-          this.$route.params.variant_id +
-          "/"
+        API_URL
+        + "session/"
+        + this.$route.params.session_id
+        + "/"
+        + this.$route.params.question_number
+        + "/"
       )
       .then(response => {
         console.log(response.data);
@@ -111,6 +85,7 @@ export default {
         }
       });
   },
+
   methods: {
     pushAnswer(data) {
       this.is_pushed = data.is_pushed;
@@ -131,14 +106,6 @@ export default {
               variant_id: response.data["variant_id"]
             }
           });
-          // .catch(error => {
-          // if (
-          //     error.name !== 'NavigationDuplicated' &&
-          //     !error.message.includes('Avoided redundant navigation to current location')
-          // ) {
-          //     console.log(error)
-          // }
-          // });
           this.vars_assignment(response.data);
         })
         .catch(error => {
@@ -188,7 +155,7 @@ export default {
           );
         }
       }
-      this.is_pushed = false;
+      this.is_pushed = true;
     },
     isAnswer_1() {
       if (this.options[1] == this.word) {
@@ -298,115 +265,113 @@ export default {
       }
       this.is_pushed = true;
     },
+
+    // Присвоение переменных из запроса
     vars_assignment(data) {
-      this.meaning = data["meaning"];
-      this.word = data["word"];
-      this.number = data["variant_number"];
-      this.option_1 = data["option_1"];
-      this.option_2 = data["option_2"];
-      this.option_3 = data["option_3"];
-      this.is_full = data["is_full"];
-      this.is_answered = data["answered"];
-      this.options.push(this.word);
-      this.options.push(this.option_1);
-      this.options.push(this.option_2);
-      this.options.push(this.option_3);
-      this.options = this.options.sort(() => Math.random() - 0.5);
-      this.options.forEach(option => {
-        this.buttons.push({
-          title: option,
-          is_right: option == this.word,
-          is_pushed: false,
-        })
-      })
+      this.session = data["session"];
+      this.number = data["number"];
+      this.is_answered = data["is_answered"];
+      this.is_correct_answer = data["is_correct_answer"];
+      this.preamble = data["preamble"];
+      this.fable = data["fable"];
+      this.example = data["example"];
+      this.comment = data["comment"];
+      this.variants = data["variants"];
+      },
+
+    vars_reset() {
+      this.session = "";
+      this.number = "";
+      this.is_answered = "";
+      this.is_correct_answer = "";
+      this.preamble = "";
+      this.fable = "";
+      this.example = "";
+      this.comment = "";
+      this.variants = [];
     },
-    get_button_colors() {
-      if (this.options[0] == this.word) {
-        this.isRight0 = true;
-      } else if (this.options[1] == this.word) {
-        this.isRight1 = true;
-      } else if (this.options[2] == this.word) {
-        this.isRight2 = true;
-      } else if (this.options[3] == this.word) {
-        this.isRight3 = true;
-      }
-    },
-    page_vars_reset() {
-      this.options = [];
-      this.buttons = [];
-      this.disabled = false;
-      this.notice = "";
-      this.is_pushed = false;
-      this.isRight0 = false;
-      this.isRight1 = false;
-      this.isRight2 = false;
-      this.isRight3 = false;
-      this.isFalse0 = false;
-      this.isFalse1 = false;
-      this.isFalse2 = false;
-      this.isFalse3 = false;
-      this.infoRight = false;
-      this.infoFalse = false;
-    },
-    get_mistake_variant(variant) {
-      this.mistake = "";
-      if (variant == this.option_1) {
-        this.mistake = 1;
-      } else if (variant == this.option_2) {
-        this.mistake = 2;
-      } else if (variant == this.option_3) {
-        this.mistake = 3;
-      }
-    }
   }
 };
 </script>
 <style>
-
-@media (max-height: 575px) {
-p {
-  font-size: 15px;
+.quest-wrapper{
+  /* background-color: beige; */
+  display: grid;
+  place-items: center;
+  height: 100vh;
+  margin: 0;
+  grid-template-rows: 40px 40px auto auto auto 50px;
+  width: 100%;
+  max-width: 500px;
 }
 
-.info {
-  font-size: 20px;
+.quest-achievement{
+  margin-top: 20px;
+  grid-row: 1;
+  border-radius: 5px;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
 }
 
-.info-field {
-  height: 35px;
-  margin-bottom: 5%;
+.quest-numbers{
+  width: 80%;
+  grid-row: 2;
+  border-radius: 5px;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
 }
 
-.question {
-  /* height: 85px; */
-  margin-top: 8px;
-  margin-bottom: 15px;
+.quest-question{
+  grid-row: 3;
+  width: 80%;
+  border-radius: 15px;
+  background-color: rgba(255, 255, 255, 0.2);
+  min-height: 1em;
+  padding: 1em;
 }
 
-.center-field {
-  margin-bottom: 8px;
-  height: 75px;
+.quest-question-text{
+  font-size: 12px;
+  text-align: justify;
+  color: #fff;
 }
 
-.button {
-  height: 35px;
-  width: 200px;
-  font-size: 18px;
-  margin-bottom: 5%;
+.quest-variants-btn{
+  grid-row: 4;
+  padding: 30px;
+  width: 80%;
+  height: 90%;
+  border-radius: 15px;
+  background-color: rgba(255, 255, 255, 0.2);
+  display: grid;
+  grid-gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  justify-content: center;
 }
 
-.instruction {
-  padding-top: 10px;
+.quest-variants-btn-2{
+  grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
 }
 
-.text-instruction {
-  font-size: 15px;
+.quest-variants-btn-4{
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 }
 
-.next-button {
-  height: 45px;
-  font-size: 18px;
-  padding-top: 3px;
+.quest-next-btn{
+  grid-row: 5;
+  width: 80%;
+  border-radius: 10px;
+  border-width: 0;
+  display: grid;
 }
+
+.next-btn{
+  height: 40px;
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 1.5px 1.5px 1.5px rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  border-width: 0;
+  color: #fff;
 }
 </style>
