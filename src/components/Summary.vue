@@ -34,19 +34,7 @@ export default {
   }
 },
   mounted() {
-    axios.get(API_URL + "get_actual_quiz/").then(header => {
-      if (header.data["quiz_type"] == "orthography"){
-        this.quiz_header = '"Орфография"'
-      }
-      else if (header.data["quiz_type"] == "lexicon"){
-        this.quiz_header = '"Лексикон"'
-      }
-      else if (header.data["quiz_type"] == "phraseology"){
-        this.quiz_header = '"Стилистика"'
-      }
-    });
-    this.loader = true
-    axios.get(API_URL + "sessions/" + this.$route.params.session_id + "/")
+    axios.get(API_URL + "session/" + this.$route.params.session_id + "/")
     .then(response=> {
                   console.log(response.data);
                   this.score = response.data['score']

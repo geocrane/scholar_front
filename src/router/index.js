@@ -45,7 +45,7 @@ export default new Router({
       component: Phraseology
     },
     {
-      path: '/:session_id/summary/',
+      path: '/session/:session_id/summary/',
       name: 'summary',
       component: Summary
     },

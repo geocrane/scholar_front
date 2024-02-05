@@ -1,43 +1,59 @@
 <template>
   <body class="background">
     <div class="quest-wrapper">
-
       <!-- Сообщение о достижении -->
       <div class="quest-achievement">
-        <p>Достижение</p>
+        <p>Достижение: {{ this.achievement }}</p>
       </div>
 
       <!-- Панель с номерами вопросов -->
       <div class="quest-numbers">
-        <p style="font-size: 14px; text-align: right; margin: 0; padding-right: 10px;">{{ this.number }}</p>
+        <span
+          v-for="(item, index) in this.scale_data"
+          :key="index"
+          :class="{
+            notanswered: !item.is_answered,
+            correct: item.is_correct_answer,
+            incorrect: !item.is_correct_answer,
+            current: item.number === number
+          }"
+        >
+          {{ item.number }}
+        </span>
       </div>
 
       <!-- Вопрос -->
       <div class="quest-question">
         <p class="quest-question-text">
-          {{ this.preamble }}<br>{{ this.fable }} Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolore ipsam esse iure cum, quos voluptatibus voluptates qui! Provident consequuntur unde necessitatibus iure at veniam, nam repudiandae rem illum soluta tempora.</p>
+          {{ this.preamble }}:<br />{{ this.fable }}
+        </p>
       </div>
 
       <!-- Кнопки с ответами -->
-      <div :class="{'quest-variants-btn-4': variants.length > 2, 'quest-variants-btn-2': variants.length === 2}" class="quest-variants-btn">
-        <answersButton v-for="variant in variants" :key="variant.id" :buttonProps="variant" :disabled="disabled" @pushAnswer="pushAnswer"/>
+      <div
+        :class="{
+          'quest-variants-btn-4': variants.length > 2,
+          'quest-variants-btn-2': variants.length === 2
+        }"
+        class="quest-variants-btn"
+      >
+        <answersButton
+          v-for="variant in variants"
+          :key="variant.id"
+          :buttonProps="variant"
+          @getAnswer="getAnswer"
+        />
       </div>
 
       <!-- Кнопка отправить ответ -->
       <div class="quest-next-btn">
-       <p>
-        <button class="next-btn"
-          :disabled="!this.is_pushed"
-          v-on:click="PushAnswer()"
-        >
-          ОТВЕТИТЬ
-        </button>
-      </p>
+        <p>
+          <button class="next-btn" v-on:click="pushAnswer()">
+            ОТВЕТИТЬ
+          </button>
+        </p>
+      </div>
     </div>
-
-    </div>
-
-
   </body>
 </template>
 <script>
@@ -49,12 +65,13 @@ const API_URL = config["API_LOCATION"];
 
 export default {
   components: {
-		answersButton: Button
-	},
+    answersButton: Button
+  },
   data() {
     return {
       session: "",
       number: "",
+      question_id: "",
       is_answered: "",
       is_correct_answer: "",
       preamble: "",
@@ -62,17 +79,25 @@ export default {
       example: "",
       comment: "",
       variants: [],
+      achievement: "",
+      scale_data: [],
+      selected_answer: {}
     };
+  },
+  watch: {
+    "$route.params.question_number"(newId, oldId) {
+      this.loadDataForNewRoute(newId);
+    }
   },
   mounted() {
     axios
       .get(
-        API_URL
-        + "session/"
-        + this.$route.params.session_id
-        + "/"
-        + this.$route.params.question_number
-        + "/"
+        API_URL +
+          "session/" +
+          this.$route.params.session_id +
+          "/" +
+          this.$route.params.question_number +
+          "/"
       )
       .then(response => {
         console.log(response.data);
@@ -87,189 +112,59 @@ export default {
   },
 
   methods: {
-    pushAnswer(data) {
-      this.is_pushed = data.is_pushed;
-      this.disabled = true;
+    getAnswer(data) {
+      this.selected_answer = data;
     },
-    NextVariant() {
-      axios
-        .post(
-          API_URL + "lexicon/" + this.$route.params.session_id + "/variants/"
-        )
-        .then(response => {
-          this.page_vars_reset();
-          console.log(response.data);
-          this.$router.push({
-            name: "lexicon",
-            params: {
-              session_id: this.$route.params.session_id,
-              variant_id: response.data["variant_id"]
-            }
-          });
-          this.vars_assignment(response.data);
-        })
-        .catch(error => {
-          console.log(error.response.data);
-          for (var key in error.response.data) {
-            this.errors = error.response.data[key];
-          }
+
+    async pushAnswer() {
+      try {
+        const response = await axios.post(API_URL + "answer/", {
+          session: this.session,
+          question: this.question_id,
+          variant: this.selected_answer.id,
+          score: this.selected_answer.is_true
         });
-    },
-    isSummary() {
-      this.$router.push({
-        name: "summary",
-        params: { session_id: this.$route.params.session_id }
-      });
-    },
-    isAnswer_0() {
-      if (this.options[0] == this.word) {
-        this.isRight0 = true;
-        this.infoRight = true;
-        this.notice = "ВЕРНО!";
-        if (this.is_answered == null) {
-          axios.patch(
-            API_URL +
-              "lexicon/" +
-              this.$route.params.session_id +
-              "/variants/" +
-              this.$route.params.variant_id +
-              "/",
-            { answer_field: 0, score: 1 }
-          );
+        if (response.status === 201) {
+          this.number += 1;
+          if (this.number > 15) {
+            this.$router.push({
+              name: "summary",
+              params: {
+                session_id: this.session
+              }
+            });
+          } else {
+            this.$router.push({
+              name: "question",
+              params: {
+                session_id: this.session,
+                question_number: this.number
+              }
+            });
+          }
+        } else {
+          console.error("Error submitting answer:", response.statusText);
         }
-      } else {
-        this.isFalse0 = true;
-        this.infoFalse = true;
-        this.notice = "НЕВЕРНО!";
-        this.get_button_colors();
-        this.get_mistake_variant(this.options[0]);
-        if (this.is_answered == null) {
-          axios.patch(
-            API_URL +
-              "lexicon/" +
-              this.$route.params.session_id +
-              "/variants/" +
-              this.$route.params.variant_id +
-              "/",
-            { answer_field: this.mistake, score: 0 }
-          );
-        }
+      } catch (error) {
+        console.error("Error submitting answer:", error);
       }
-      this.is_pushed = true;
     },
-    isAnswer_1() {
-      if (this.options[1] == this.word) {
-        this.isRight1 = true;
-        this.infoRight = true;
-        this.notice = "ВЕРНО!";
-        if (this.is_answered == null) {
-          axios.patch(
-            API_URL +
-              "lexicon/" +
-              this.$route.params.session_id +
-              "/variants/" +
-              this.$route.params.variant_id +
-              "/",
-            { answer_field: 0, score: 1 }
-          );
-        }
-      } else {
-        this.isFalse1 = true;
-        this.infoFalse = true;
-        this.notice = "НЕВЕРНО!";
-        this.get_button_colors();
-        this.get_mistake_variant(this.options[1]);
-        if (this.is_answered == null) {
-          axios.patch(
-            API_URL +
-              "lexicon/" +
-              this.$route.params.session_id +
-              "/variants/" +
-              this.$route.params.variant_id +
-              "/",
-            { answer_field: this.mistake, score: 0 }
-          );
-        }
-      }
-      this.is_pushed = true;
-    },
-    isAnswer_2() {
-      if (this.options[2] === this.word) {
-        this.isRight2 = true;
-        this.infoRight = true;
-        this.notice = "ВЕРНО!";
-        if (this.is_answered == null) {
-          axios.patch(
-            API_URL +
-              "lexicon/" +
-              this.$route.params.session_id +
-              "/variants/" +
-              this.$route.params.variant_id +
-              "/",
-            { answer_field: 0, score: 1 }
-          );
-        }
-      } else {
-        this.isFalse2 = true;
-        this.infoFalse = true;
-        this.notice = "НЕВЕРНО!";
-        this.get_button_colors();
-        this.get_mistake_variant(this.options[2]);
-        if (this.is_answered == null) {
-          axios.patch(
-            API_URL +
-              "lexicon/" +
-              this.$route.params.session_id +
-              "/variants/" +
-              this.$route.params.variant_id +
-              "/",
-            { answer_field: this.mistake, score: 0 }
-          );
-        }
-      }
-      this.is_pushed = true;
-    },
-    isAnswer_3() {
-      if (this.options[3] === this.word) {
-        this.isRight3 = true;
-        this.infoRight = true;
-        this.notice = "ВЕРНО!";
-        if (this.is_answered == null) {
-          axios.patch(
-            API_URL +
-              "lexicon/" +
-              this.$route.params.session_id +
-              "/variants/" +
-              this.$route.params.variant_id +
-              "/",
-            { answer_field: 0, score: 1 }
-          );
-        }
-      } else {
-        this.isFalse3 = true;
-        this.infoFalse = true;
-        this.notice = "НЕВЕРНО!";
-        this.get_button_colors();
-        this.get_mistake_variant(this.options[3]);
-        if (this.is_answered == null) {
-          axios.patch(
-            API_URL +
-              "lexicon/" +
-              this.$route.params.session_id +
-              "/variants/" +
-              this.$route.params.variant_id +
-              "/",
-            { answer_field: this.mistake, score: 0 }
-          );
-        }
-      }
-      this.is_pushed = true;
+
+    loadDataForNewRoute(id) {
+      return axios
+        .get(API_URL + "session/" + this.session + "/" + id + "/")
+        .then(response => {
+          console.log(response.data);
+          this.vars_assignment(response.data);
+          this.selected_answer = {};
+        });
     },
 
     // Присвоение переменных из запроса
     vars_assignment(data) {
       this.session = data["session"];
       this.number = data["number"];
+      this.question_id = data["id"];
       this.is_answered = data["is_answered"];
       this.is_correct_answer = data["is_correct_answer"];
       this.preamble = data["preamble"];
@@ -277,7 +172,9 @@ export default {
       this.example = data["example"];
       this.comment = data["comment"];
       this.variants = data["variants"];
-      },
+      this.achievement = data["achievement"];
+      this.scale_data = data["scale_data"];
+    },
 
     vars_reset() {
       this.session = "";
@@ -289,12 +186,12 @@ export default {
       this.example = "";
       this.comment = "";
       this.variants = [];
-    },
+    }
   }
 };
 </script>
 <style>
-.quest-wrapper{
+.quest-wrapper {
   /* background-color: beige; */
   display: grid;
   place-items: center;
@@ -305,7 +202,7 @@ export default {
   max-width: 500px;
 }
 
-.quest-achievement{
+.quest-achievement {
   margin-top: 20px;
   grid-row: 1;
   border-radius: 5px;
@@ -313,15 +210,20 @@ export default {
   color: #fff;
 }
 
-.quest-numbers{
+.quest-numbers {
   width: 80%;
   grid-row: 2;
   border-radius: 5px;
   background-color: rgba(255, 255, 255, 0.2);
   color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 5px;
+  padding: 0 5px;
 }
 
-.quest-question{
+.quest-question {
   grid-row: 3;
   width: 80%;
   border-radius: 15px;
@@ -330,13 +232,13 @@ export default {
   padding: 1em;
 }
 
-.quest-question-text{
+.quest-question-text {
   font-size: 12px;
   text-align: justify;
   color: #fff;
 }
 
-.quest-variants-btn{
+.quest-variants-btn {
   grid-row: 4;
   padding: 30px;
   width: 80%;
@@ -349,15 +251,15 @@ export default {
   justify-content: center;
 }
 
-.quest-variants-btn-2{
+.quest-variants-btn-2 {
   grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
 }
 
-.quest-variants-btn-4{
+.quest-variants-btn-4 {
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 }
 
-.quest-next-btn{
+.quest-next-btn {
   grid-row: 5;
   width: 80%;
   border-radius: 10px;
@@ -365,7 +267,7 @@ export default {
   display: grid;
 }
 
-.next-btn{
+.next-btn {
   height: 40px;
   width: 100%;
   background-color: rgba(255, 255, 255, 0.2);
@@ -373,5 +275,37 @@ export default {
   border-radius: 10px;
   border-width: 0;
   color: #fff;
+}
+
+.correct {
+  font-size: 12px;
+  color: rgb(2, 255, 2);
+}
+
+.incorrect {
+  font-size: 12px;
+  /* color: red; */
+  text-decoration: line-through;
+  text-decoration-color: red;
+}
+
+.notanswered {
+  font-size: 12px;
+  color: rgb(168, 168, 168);
+  text-decoration: none;
+}
+
+.current {
+  display: inline-block;
+  width: 18px; /* Ширина кружочка */
+  height: 18px; /* Высота кружочка */
+  line-height: 15px; /* Высота строки текста */
+  text-align: center; /* Центрирование текста */
+  border-radius: 50%; /* Сделать форму круглой */
+  background-color: #f0f0f0; /* Цвет фона кружочка */
+  color: #333; /* Цвет текста */
+  font-size: 12px; /* Размер шрифта */
+  margin: 2px; /* Отступ для удобства чтения */
+  text-decoration: none;
 }
 </style>
