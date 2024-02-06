@@ -32,13 +32,13 @@
       <!-- Кнопки с ответами -->
       <div
         :class="{
-          'quest-variants-btn-4': variants.length > 2,
-          'quest-variants-btn-2': variants.length === 2
+          'quest-variants-btn-4': shuffledVariants.length > 2,
+          'quest-variants-btn-2': shuffledVariants.length === 2
         }"
         class="quest-variants-btn"
       >
         <answersButton
-          v-for="variant in variants"
+          v-for="variant in shuffledVariants"
           :key="variant.id"
           :buttonProps="variant"
           @getAnswer="getAnswer"
@@ -48,45 +48,84 @@
       <!-- Кнопка отправить ответ -->
       <div class="quest-next-btn">
         <p>
-          <button class="next-btn" v-on:click="pushAnswer()">
+          <button
+            :class="{
+              'next-btn': this.is_answer_choosen,
+              'next-btn-inactive': !this.is_answer_choosen
+            }"
+            v-on:click="submitAnswer()"
+          >
             ОТВЕТИТЬ
           </button>
         </p>
       </div>
     </div>
+
+    <Modal
+      v-if="showModal"
+      @close="handleClose"
+      :is_correct_modal_bool="this.is_correct_modal_bool"
+      :is_correct_text="this.is_correct_text"
+    >
+      <!-- <p class="is_true">{{ is_true }}</p> -->
+      <template v-slot:header>
+        <p class="example">
+          {{ example }}
+        </p>
+      </template>
+      <template v-slot:default>
+        <p class="comment">
+          Комментарий:<br />
+          {{ comment }}
+        </p>
+      </template>
+    </Modal>
   </body>
 </template>
 <script>
 import Button from "@/components/Button.vue";
 import config from "@/scripts/api-config";
 import axios from "axios";
+import Modal from "./ModalAnswerResult.vue";
 
 const API_URL = config["API_LOCATION"];
 
 export default {
   components: {
+    Modal,
     answersButton: Button
   },
   data() {
     return {
+      showModal: false,
       session: "",
       number: "",
       question_id: "",
       is_answered: "",
       is_correct_answer: "",
+      is_true: "",
       preamble: "",
       fable: "",
       example: "",
       comment: "",
       variants: [],
+      shuffledVariants: [],
       achievement: "",
+      score: "",
       scale_data: [],
-      selected_answer: {}
+      selected_answer: {},
+      is_answer_choosen: false,
+      is_correct_text: "",
+      is_correct_modal_bool: ""
     };
   },
   watch: {
     "$route.params.question_number"(newId, oldId) {
       this.loadDataForNewRoute(newId);
+    },
+
+    variants(newVariants) {
+      this.shuffledVariants = this.shuffleArray([...newVariants]);
     }
   },
   mounted() {
@@ -100,8 +139,10 @@ export default {
           "/"
       )
       .then(response => {
-        console.log(response.data);
+        console.log(response.data)
         this.vars_assignment(response.data);
+        if (this.is_answered == true) { this.showModal = true };
+        this.shuffledVariants = this.shuffleArray([...this.variants]);
       })
       .catch(error => {
         console.log(error.response.data);
@@ -112,8 +153,46 @@ export default {
   },
 
   methods: {
+    shuffleArray(array) {
+      for (let i = array.length -  1; i >  0; i--) {
+        const j = Math.floor(Math.random() * (i +  1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    },
+
+    handleClose() {
+      this.number += 1;
+      if (this.number > 15) {
+        this.$router.push({
+          name: "summary",
+          params: {
+            session_id: this.session
+          }
+        });
+      } else {
+        this.$router.push({
+          name: "question",
+          params: {
+            session_id: this.session,
+            question_number: this.number
+          }
+        });
+      }
+      this.showModal = false;
+    },
+
     getAnswer(data) {
       this.selected_answer = data;
+      this.is_answer_choosen = true;
+    },
+
+    submitAnswer() {
+      if (!this.is_answer_choosen) {
+        console.log("Не выбран вариант ответа");
+      } else {
+        this.pushAnswer();
+      }
     },
 
     async pushAnswer() {
@@ -124,24 +203,24 @@ export default {
           variant: this.selected_answer.id,
           score: this.selected_answer.is_true
         });
+
         if (response.status === 201) {
-          this.number += 1;
-          if (this.number > 15) {
-            this.$router.push({
-              name: "summary",
-              params: {
-                session_id: this.session
-              }
-            });
+          if (this.selected_answer.is_true) {
+            this.is_correct_text = "ВЕРНО!";
+            this.is_correct_modal_bool = true;
           } else {
-            this.$router.push({
-              name: "question",
-              params: {
-                session_id: this.session,
-                question_number: this.number
-              }
-            });
+            this.is_correct_text = "ОШИБКА!";
+            this.is_correct_modal_bool = false;
           }
+          if (this.score == 4 && this.selected_answer.is_true) {
+            this.is_correct_text = "Поздравляем, вы Хорошист";
+          } else if (this.score == 9 && this.selected_answer.is_true) {
+            this.is_correct_text = "Вы Отличиник! Поздравляем!";
+          } else if (this.score == 14 && this.selected_answer.is_true) {
+            this.is_correct_text = "Грамотей! УРА!";
+          }
+
+          this.showModal = true;
         } else {
           console.error("Error submitting answer:", response.statusText);
         }
@@ -156,6 +235,17 @@ export default {
         .then(response => {
           console.log(response.data);
           this.vars_assignment(response.data);
+          if (this.is_answered == true) {
+            if (this.is_correct_answer == true) {
+              this.is_correct_modal_bool = true;
+              this.is_correct_text = "ВЕРНО!";
+            } else if (this.is_correct_answer == false) {
+              this.is_correct_modal_bool = false;
+              this.is_correct_text = "ОШИБКА!";
+            }
+            this.showModal = true
+          };
+          this.shuffledVariants = this.shuffleArray([...this.variants]);
           this.selected_answer = {};
         });
     },
@@ -173,19 +263,9 @@ export default {
       this.comment = data["comment"];
       this.variants = data["variants"];
       this.achievement = data["achievement"];
+      this.score = data["score"];
       this.scale_data = data["scale_data"];
-    },
-
-    vars_reset() {
-      this.session = "";
-      this.number = "";
-      this.is_answered = "";
-      this.is_correct_answer = "";
-      this.preamble = "";
-      this.fable = "";
-      this.example = "";
-      this.comment = "";
-      this.variants = [];
+      this.is_answer_choosen = false;
     }
   }
 };
@@ -277,6 +357,16 @@ export default {
   color: #fff;
 }
 
+.next-btn-inactive {
+  height: 40px;
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 1.5px 1.5px 1.5px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  border-width: 0;
+  color:rgba(0, 0, 0, 0.3);
+}
+
 .correct {
   font-size: 12px;
   color: rgb(2, 255, 2);
@@ -291,7 +381,7 @@ export default {
 
 .notanswered {
   font-size: 12px;
-  color: rgb(168, 168, 168);
+  color: rgb(110, 110, 110);
   text-decoration: none;
 }
 
@@ -307,5 +397,23 @@ export default {
   font-size: 12px; /* Размер шрифта */
   margin: 2px; /* Отступ для удобства чтения */
   text-decoration: none;
+}
+
+.example {
+  text-align: justify;
+  hyphens: auto;
+  /* font-weight: bold; */
+  font-style: italic;
+  font-size: 14px;
+}
+
+.comment {
+  text-align: justify;
+  hyphens: auto;
+}
+
+.is_true {
+  width: 80%;
+  font-size: 25px;
 }
 </style>

@@ -1,24 +1,20 @@
 <template>
- <button :class="{ 'variants-btn': true }" @click="answered">
+  <button
+    :class="{ 'variants-btn': true }"
+    @click="answered"
+  >
     <p style="text-align: center;">{{ buttonProps.text }}</p>
- </button>
+  </button>
 </template>
 <script>
 
 export default {
-    props: ['buttonProps', 'disabled'],
-    methods: {
-    data() {},
-        // handleMouseDown() {
-        //     this.variant_is_pushed = true;
-        // },
-        // // handleMouseUp() {
-        // //     this.variant_is_pushed = false;
-        // // },
-        answered() {
-            this.$emit('getAnswer', this.buttonProps);
-        },
-    }
+  props: ['buttonProps', 'disabled'],
+  methods: {
+    answered() {
+      this.$emit('getAnswer', this.buttonProps);
+    },
+  }
 }
 </script>
 
@@ -36,9 +32,9 @@ export default {
   place-items: center;
 }
 
-.variants-btn:focus{
-    background-color: rgba(255, 255, 255, 0.8);
-    color: #2b2b2bee;
+.variants-btn:focus {
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #2b2b2bee;
 }
 
 /* .variants-btn.pressed {
