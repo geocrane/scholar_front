@@ -1,27 +1,32 @@
 <template>
   <div id="app">
-      <router-view/>
+    <router-view />
   </div>
 </template>
 
 <script>
-
 export default {
-  name: 'App',
-}
+  name: "App"
+};
 </script>
 
 <style>
-
 p {
   font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
   margin: 0;
+  margin-bottom: 0;
 }
 
-table{
-    width: 100%;
-    text-align: center;
-    vertical-align: middle;
+.text {
+  font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+  margin: 0;
+  margin-bottom: 0;
+}
+
+table {
+  width: 100%;
+  text-align: center;
+  vertical-align: middle;
 }
 
 .disabled {
@@ -48,8 +53,7 @@ table{
 }
 
 .background {
-
-  background-image: linear-gradient(to bottom right, #1F1A3F, #0B5244);
+  background-image: linear-gradient(to bottom right, #1f1a3f, #0b5244);
   background-size: 100% 100%;
   background-repeat: no-repeat;
   background-position: center center;
@@ -57,11 +61,11 @@ table{
 }
 
 .box-shadow-3 {
-    box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.3);
+  box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.3);
 }
 
 .box-shadow-5 {
-    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.4);
+  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.4);
 }
 
 .info-field {

@@ -19,7 +19,7 @@
           <div class="modal-footer">
             <slot name="footer">
               <button class="modal-default-button" @click="$emit('close')">
-                Следующий вопрос
+                {{ send_button }}
               </button>
             </slot>
           </div>
@@ -32,7 +32,11 @@
 <script>
 export default {
   name: "Modal",
-  props: { is_correct_modal_bool: Boolean, is_correct_text: String },
+  props: {
+    is_correct_modal_bool: Boolean,
+    is_correct_text: String,
+    send_button: String
+  },
   methods: {}
 };
 </script>
@@ -46,7 +50,11 @@ export default {
   width: 100%;
   height: 100%;
   /* background-color: rgba(0, 0, 0, 0.6); */
-  background-image: linear-gradient(to bottom right, rgba(31,  26,  63,  0.9), rgba(11,  82,  68,  1));
+  background-image: linear-gradient(
+    to bottom right,
+    rgba(31, 26, 63, 0.9),
+    rgba(11, 82, 68, 1)
+  );
   display: table; /* Для центрирования контента */
   transition: opacity 0.3s ease;
 }
@@ -59,7 +67,7 @@ export default {
 .modal-container {
   width: 80%;
   margin: 0px auto;
-  padding: 20px 30px;
+  padding: 20px;
   margin-top: 20px;
   grid-row: 1;
   background-color: rgba(255, 255, 255, 0.2);
@@ -68,7 +76,7 @@ export default {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
   transition: all 0.3s ease;
   font-family: Helvetica, Arial, sans-serif;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .modal-container-true {
@@ -117,5 +125,11 @@ export default {
 }
 .modal-leave-to .modal-container {
   transform: scale(0);
+}
+
+@media screen and (max-width: 350px) {
+  .modal-container {
+    max-height: 300px;
+  }
 }
 </style>

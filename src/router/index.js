@@ -27,7 +27,7 @@ export default new Router({
       component: Question
     },
     {
-      path: '/session/:session_id/summary/',
+      path: '/session/:session_id/',
       name: 'summary',
       component: Summary
     },

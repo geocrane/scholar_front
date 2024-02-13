@@ -18,16 +18,24 @@
           из {{ this.questions_count }}
         </p>
         <p class="sum-question-text">
-          И достигли звания: <br />
-          <Добавить динамическое звание>
+        </br>
+          Получено звание: </br>
+          <span style="font-size: 40px">{{ this.achievment }}</span> </br>
+          <span style="font-size: 40px">{{ this.stars }}</span>
         </p>
       </div>
+      <button class="sum-repeat-btn"
+            v-on:click="repeatQuiz()"
+          >
+            ПОПРОБОВАТЬ СНОВА
+      </button>
     </div>
   </body>
 </template>
 
 <script>
 import config from "@/scripts/api-config";
+import constants from "@/scripts/constants";
 import axios from "axios";
 
 const API_URL = config["API_LOCATION"];
@@ -36,10 +44,13 @@ export default {
   name: "Summary",
   data() {
     return {
+      player: "",
       score: "",
       questions_count: "15",
       quiz_header: "",
-      loader: false
+      loader: false,
+      achievment: "",
+      stars: "",
     };
   },
   mounted() {
@@ -47,7 +58,24 @@ export default {
       .get(API_URL + "session/" + this.$route.params.session_id + "/")
       .then(response => {
         console.log(response.data);
+        this.player = response.data["player"];
         this.score = response.data["score"];
+        if (this.score < 5) {
+          this.achievment = constants["BAD"];
+          this.stars = "☆☆☆";
+        }
+        if (this.score >= 5 && this.score < 10) {
+          this.achievment = constants["NORMAL"];
+          this.stars = "★☆☆";
+        }
+        else if (this.score >= 10 && this.score < 15) {
+          this.achievment = constants["GOOD"];
+          this.stars = "★★☆";
+        }
+        else if (this.score >= 15) {
+          this.achievment = constants["EXCELENT"];
+          this.stars = "★★★";
+        };
       })
       .catch(error => {
         console.log(error.response.data);
@@ -57,7 +85,34 @@ export default {
       });
     this.loader = false;
   },
-  methods: {}
+  methods: {
+    repeatQuiz() {
+      axios
+          .post(API_URL + "session/", {
+            player: this.player
+          })
+          .then(session => {
+            axios
+              .get(API_URL + "session/" + session.data["id"] + "/1/")
+              .then(question => {
+                this.$router.push({
+                  name: "question",
+                  params: {
+                    session_id: question.data["session"],
+                    question_number: question.data["number"]
+                  }
+                });
+              })
+              .catch(error => {
+                console.log(error.response.data);
+                for (var key in error.response.data) {
+                  this.errors = error.response.data[key][0];
+                }
+                console.log(this.errors[0]);
+              });
+          });
+    }
+  }
 };
 </script>
 
@@ -67,7 +122,7 @@ export default {
   place-items: center;
   height: 100vh;
   margin: 0;
-  grid-template-rows: auto 0.3fr 1fr 50px 1fr;
+  grid-template-rows: auto 0.3fr auto 70px 1fr;
   width: 100%;
   max-width: 500px;
 }
@@ -143,5 +198,19 @@ export default {
   font-size: 14px;
   text-align: center;
   color: #fff;
+  margin-bottom: 0;
+}
+
+.sum-repeat-btn{
+  grid-row: 4;
+  margin-top: 15px;
+  height: 35px;
+  font-size: 18px;
+  width: 220px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  border-width: 0;
+  color: #fff;
+  box-shadow: 1.5px 1.5px 1.5px rgba(0, 0, 0, 0.5);
 }
 </style>

@@ -11,18 +11,18 @@
       </p>
 
       <!-- Название Викторины -->
-      <p class="auth-title"> Викторина: "Стань Грамотеем"</p>
+      <p class="auth-title">Викторина: "Грамотей"</p>
 
       <!-- Раздел авторизации (располагает по центру) -->
       <div class="auth-block">
-
         <!-- Авторизация -->
         <div class="auth-background-field box-shadow-5">
-
           <!-- Набор полей ТБ и ТН -->
           <fieldset class="auth-fields-text">
             <div>
-              <label class="auth-labels" for="territorial_bank">Тер. банк:&#8201;&#8201;&#8201;&#8201;</label>
+              <label class="auth-labels" for="territorial_bank"
+                >Тер. банк:&#8201;&#8201;&#8201;&#8201;</label
+              >
               <select
                 class="auth-bank-select box-shadow-3"
                 v-model="bank"
@@ -34,7 +34,8 @@
             </div>
 
             <div>
-              <label class="auth-labels" for="personnel_number">Таб. номер:</label
+              <label class="auth-labels" for="personnel_number"
+                >Таб. номер:</label
               ><input
                 class="auth-number-input box-shadow-3"
                 v-model="personnel_number"
@@ -42,19 +43,22 @@
                 id="personnel_number"
                 placeholder="0XXXXXXX"
               />
-              </div>
+            </div>
           </fieldset>
 
           <!-- Сообщение об ошибке авторизации -->
           <p class="errors">{{ this.errors }}</p>
         </div>
-      </div> <!-- Конец авторизации -->
+      </div>
+      <!-- Конец авторизации -->
 
       <!-- Кнопка Начать -->
-            <button class="auth-button" v-on:click="SendAutorization()">
-              Начать
-            </button>
-    </div> <!-- Конец wrapper -->
+      <button class="auth-button" v-on:click="SendAutorization()">
+        <span v-if="!this.loading">Начать</span>
+        <b-spinner v-else variant="light" small></b-spinner>
+      </button>
+    </div>
+    <!-- Конец wrapper -->
   </body>
 </template>
 
@@ -68,6 +72,7 @@ export default {
   name: "Autorization",
   data() {
     return {
+      loading: false,
       bank: "",
       personnel_number: "",
       session_id: "",
@@ -88,56 +93,49 @@ export default {
       ]
     };
   },
-  mounted() { },
+  mounted() {},
   methods: {
     SendAutorization() {
-      axios.post(
-        API_URL + "player/", {
-        bank: this.bank, personnel_number: this.personnel_number
-      }
-      )
-        .then(
-          player => {
-            axios.post(
-              API_URL + "session/", {
+      this.loading = true;
+      axios
+        .post(API_URL + "player/", {
+          bank: this.bank,
+          personnel_number: this.personnel_number
+        })
+        .then(player => {
+          axios
+            .post(API_URL + "session/", {
               player: player.data["id"]
-            }
-            )
-              .then(
-                session => {
-                  axios.get(
-                    API_URL + "session/" + session.data["id"] + "/1/"
-                  )
-                    .then(
-                      question => {
-                        this.$router.push(
-                          {
-                            name: "question", params: {
-                              session_id: question.data["session"], question_number: question.data["number"]
-                            }
-                          }
-                        );
-                      }
-                    )
-                    .catch(error => {
-                      console.log(error.response.data);
-                      for (var key in error.response.data) {
-                        this.errors = error.response.data[key][0];
-                      }
-                      console.log(this.errors[0]);
-                    });
-                }
-              );
-          }
-        );
+            })
+            .then(session => {
+              axios
+                .get(API_URL + "session/" + session.data["id"] + "/1/")
+                .then(question => {
+                  this.loading = false;
+                  this.$router.push({
+                    name: "question",
+                    params: {
+                      session_id: question.data["session"],
+                      question_number: question.data["number"]
+                    }
+                  });
+                })
+                .catch(error => {
+                  this.loading = false;
+                  console.log(error.response.data);
+                  for (var key in error.response.data) {
+                    this.errors = error.response.data[key][0];
+                  }
+                  console.log(this.errors[0]);
+                });
+            });
+        });
     }
   }
-}
+};
 </script>
 
 <style>
-
-
 input {
   width: 100px;
 }
@@ -265,7 +263,7 @@ select {
   box-shadow: 1.5px 1.5px 1.5px rgba(0, 0, 0, 0.5);
 }
 
-.auth-button:focus{
+.auth-button:focus {
   background-color: rgba(255, 255, 255, 0.18);
   box-shadow: inset 1.5px 1px 0.1px rgba(0, 0, 0, 0.5);
   padding-right: 5px;
