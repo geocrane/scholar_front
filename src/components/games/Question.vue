@@ -24,7 +24,7 @@
 
       <!-- Вопрос -->
       <div class="quest-question">
-        <p class="quest-question-text quest-preamble">{{ this.preamble }}:</p>
+        <p class="quest-question-text quest-preamble">{{ this.preamble }}</p>
         <p class="quest-question-text">
           <span v-html="fable"></span>
         </p>
@@ -33,7 +33,9 @@
       <!-- Кнопки с ответами -->
       <div
         :class="{
-          'quest-variants-btn-4': shuffledVariants.length > 2,
+          'quest-variants-btn-9': shuffledVariants.length === 9,
+          'quest-variants-btn-4':
+            shuffledVariants.length > 2 && shuffledVariants.length < 9,
           'quest-variants-btn-2': shuffledVariants.length === 2
         }"
         class="quest-variants-btn"
@@ -42,6 +44,7 @@
           v-for="variant in shuffledVariants"
           :key="variant.id"
           :buttonProps="variant"
+          :count="shuffledVariants.length"
           @getAnswer="getAnswer"
         />
       </div>
@@ -72,6 +75,11 @@
       :send_button="this.send_button"
     >
       <!-- <p class="is_true">{{ is_true }}</p> -->
+      <template v-slot:header-0>
+        <p class="fable">
+          <span v-html="fable"></span>
+        </p>
+      </template>
       <template v-slot:header>
         <p class="example">
           <span v-html="example"></span>
@@ -80,7 +88,7 @@
       <template v-slot:default>
         <p class="comment">
           Комментарий:<br />
-          {{ comment }}
+          <span v-html="comment"></span>
         </p>
       </template>
     </Modal>
@@ -103,8 +111,8 @@ import Button from "@/components/Button.vue";
 import config from "@/scripts/api-config";
 import constants from "@/scripts/constants";
 import axios from "axios";
-import Modal from "./ModalAnswerResult.vue";
 import ModalAchievment from "./ModalAchievment.vue";
+import Modal from "./ModalAnswerResult.vue";
 
 const API_URL = config["API_LOCATION"];
 
@@ -181,9 +189,21 @@ export default {
 
   methods: {
     shuffleArray(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+      if (array.length != 4) {
+        return array.sort((a, b) => {
+          if (a.text < b.text) {
+            return -1;
+          }
+          if (a.text > b.text) {
+            return 1;
+          }
+          return 0;
+        });
+      } else {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
       }
       return array;
     },
@@ -258,17 +278,17 @@ export default {
             this.is_correct_modal_bool = false;
           }
           if (this.score == 4 && this.selected_answer.is_true) {
-            this.achievement = constants["NORMAL"]
+            this.achievement = constants["NORMAL"];
             this.is_correct_text = "Вы достигли: " + this.achievement;
             this.stars = "★☆☆";
             this.openAchievmentModal();
           } else if (this.score == 9 && this.selected_answer.is_true) {
-            this.achievement = constants["GOOD"]
+            this.achievement = constants["GOOD"];
             this.is_correct_text = "Вы достигли: " + this.achievement;
             this.stars = "★★☆";
             this.openAchievmentModal();
           } else if (this.score == 14 && this.selected_answer.is_true) {
-            this.achievement = constants["EXCELENT"]
+            this.achievement = constants["EXCELENT"];
             this.is_correct_text = "Вы достигли: " + this.achievement;
             this.stars = "★★★";
             this.openAchievmentModal();
@@ -407,6 +427,12 @@ export default {
   grid-template-columns: repeat(auto-fit, minmax(100%, 1fr));
 }
 
+.quest-variants-btn-9 {
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: auto;
+}
+
 .quest-next-btn {
   grid-row: 5;
   width: 90%;
@@ -468,6 +494,18 @@ export default {
   text-decoration: none;
 }
 
+.fable {
+  background-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.4);
+  border-radius: 10px;
+  margin-top: 5px;
+  padding: 10px;
+  text-align: justify;
+  hyphens: auto;
+  /* font-weight: bold; */
+  font-size: 14px;
+}
+
 .example {
   text-align: justify;
   hyphens: auto;
@@ -523,6 +561,10 @@ export default {
   }
   .quest-variants-btn {
     padding: 10px 10px 20px 10px;
+  }
+  .quest-variants-btn-9 {
+    width: auto;
+    /* gap:  10px; */
   }
   .quest-question-text {
     font-size: 14px;

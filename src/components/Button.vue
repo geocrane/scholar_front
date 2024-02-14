@@ -1,11 +1,16 @@
 <template>
-  <button :class="{ 'variants-btn': true }" @click="answered" tabindex="0">
+  <button
+    class="variants-btn"
+    :class="{ 'variants-btn-2': count === 2, 'variants-btn-9': count >= 9 }"
+    @click="answered"
+    tabindex="0"
+  >
     <p class="text-align">{{ buttonProps.text }}</p>
   </button>
 </template>
 <script>
 export default {
-  props: ["buttonProps", "disabled"],
+  props: ["buttonProps", "count"],
   methods: {
     answered() {
       this.$emit("getAnswer", this.buttonProps);
@@ -29,6 +34,14 @@ export default {
   place-items: center;
 }
 
+.variants-btn-2 {
+  height: 80px;
+}
+
+.variants-btn-9 {
+  height: 80px;
+}
+
 .variants-btn:focus {
   background-color: rgba(217, 225, 225);
   color: #2b2b2bee;
@@ -49,6 +62,13 @@ export default {
     min-height: 30px;
     height: 30px;
     font-size: 12px;
+  }
+  .variants-btn-2 {
+    height: 60px;
+  }
+  .variants-btn-9 {
+    width: 60px;
+    height: 40px;
   }
 }
 </style>

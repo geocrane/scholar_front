@@ -10,6 +10,9 @@
           }"
         >
           {{ is_correct_text }}
+          <div class="modal-header-0">
+            <slot name="header-0"> </slot>
+          </div>
           <div class="modal-header">
             <slot name="header"> </slot>
           </div>
@@ -77,6 +80,7 @@ export default {
   transition: all 0.3s ease;
   font-family: Helvetica, Arial, sans-serif;
   font-size: 14px;
+  overflow-y: auto;
 }
 
 .modal-container-true {
